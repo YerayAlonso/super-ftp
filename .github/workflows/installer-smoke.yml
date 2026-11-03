@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # Draft releases are visible only to identities with repository push access.
+  contents: write
 
 jobs:
   installer:
