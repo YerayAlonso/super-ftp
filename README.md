@@ -70,7 +70,7 @@ cargo test --manifest-path src-tauri/Cargo.toml --lib
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
 ```
 
-UI tests use Edge on Windows. On Linux/macOS, first run `npx playwright install chromium`. Test fixtures in `e2e/` are not included in production builds. The Windows native smoke test temporarily enables WebView2 debugging on local port 9223, creates and deletes one temporary profile and isolated test files, and closes its process afterward.
+UI tests use Edge on Windows. On Linux/macOS, first run `npx playwright install chromium`. Test fixtures in `e2e/` are not included in production builds. The Windows native smoke test temporarily enables WebView2 debugging on local port 9223 and uses an isolated WebView2 cache and temporary files. The app still reads the current user's configuration, but the test does not create or delete connection profiles or credentials.
 
 Rust integration tests run a real SSH/SFTP server on loopback with an in-memory filesystem. They cover byte-for-byte transfers, host-key checks, cancellation, conflict decisions and overwrite protection. They do not require external servers or user credentials.
 

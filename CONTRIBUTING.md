@@ -30,7 +30,7 @@ cargo test --manifest-path src-tauri/Cargo.toml --lib --locked
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --locked -- -D warnings
 ```
 
-On Linux and macOS, install Playwright Chromium first with `npx playwright install chromium`; on Windows the UI tests use installed Microsoft Edge. Linux also needs the native libraries listed in the README. `npm run test:native` is an **opt-in Windows test** of a previously built release binary; it starts the app and temporarily modifies the current user's application configuration by adding and removing a test profile. Back up your configuration first and do not run it against data you cannot afford to change. The existing native test needs review before being used as a release gate.
+On Linux and macOS, install Playwright Chromium first with `npx playwright install chromium`; on Windows the UI tests use installed Microsoft Edge. Linux also needs the native libraries listed in the README. `npm run test:native` is an **opt-in Windows test** of a previously built release binary. It reads the current user's application configuration but does not create or delete profiles or credentials; its WebView2 cache and test files are isolated. Profile persistence is covered by Rust tests, not this smoke test.
 
 Keep changes focused, add tests where practical, and describe what you tested and any platform limitations in the pull request. Include screenshots for visual changes only after checking them for sensitive information. Document changes to transfer, deletion, host-key or credential handling and avoid weakening existing safeguards.
 

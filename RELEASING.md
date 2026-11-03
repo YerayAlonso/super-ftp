@@ -13,7 +13,7 @@ This is a manual checklist, not an automated publishing workflow. The GitHub rep
 
 ## Preparing a release
 
-- [ ] Review the preview limitations, security model, open issues and target operating systems. Test native file operations, transfers, cancellation, conflict handling, SSH agent and credential store on each platform advertised. The Windows native smoke test currently needs review; mocked UI tests do not replace real-device testing.
+- [ ] Review the preview limitations, security model, open issues and target operating systems. Test native file operations, transfers, cancellation, conflict handling, SSH agent and credential store on each platform advertised. The Windows native smoke test covers only basic local operations; mocked UI tests do not replace real-device testing.
 - [ ] Run `npm run verify`, `npm run test:ui`, Rust formatting, tests and Clippy (see [CONTRIBUTING.md](CONTRIBUTING.md)). Run `npm audit`, `npm audit --omit=dev` and `cargo audit`; investigate and record findings. Review third-party license obligations before distributing binaries.
 - [ ] Agree on the version and update `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json` and the changelog consistently. Verify the lockfiles and build with locked dependencies.
 - [ ] Build on each intended target OS. Test installation, launch, upgrade and uninstall in a clean environment. Publish only artifacts that were actually built and tested; do not imply untested platforms are supported.

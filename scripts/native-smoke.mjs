@@ -1,7 +1,7 @@
 // Opt-in Windows smoke test of the actual release executable and Tauri IPC.
 // Debugging is enabled only for this child process, never in shipped config.
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
@@ -22,6 +22,7 @@ const tempRoot = process.env.LOCALAPPDATA
   : tmpdir();
 await mkdir(tempRoot, { recursive: true });
 const temporary = await mkdtemp(join(tempRoot, 'superftp-smoke-'));
+await writeFile(join(temporary, 'smoke-test.txt'), 'Temporary test file');
 const executable = resolve('src-tauri/target/release/super-ftp.exe');
 const child = spawn(executable, [], {
   env: {
@@ -32,7 +33,6 @@ const child = spawn(executable, [], {
   stdio: 'ignore',
 });
 let browser;
-let profileId;
 let page;
 try {
   let connected = false;
@@ -55,8 +55,8 @@ try {
   page = context.pages()[0] ?? (await context.waitForEvent('page'));
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.getByRole('heading', { name: 'Fitxers en bones mans.' }).waitFor();
-  await page.getByRole('combobox', { name: 'Idioma' }).selectOption('en');
+  await page.getByRole('combobox').waitFor();
+  await page.getByRole('combobox').selectOption('en');
   await expect(page.getByRole('heading', { name: 'Your files, in good hands.' })).toBeVisible();
   await page.getByRole('combobox', { name: 'Language' }).selectOption('ca');
   // Wait until the startup listing is populated before editing the address;
@@ -66,17 +66,17 @@ try {
   );
   await expect(page.locator('.web-preview-banner')).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: 'Ruta local', exact: true })).not.toHaveValue('');
-  await page.getByRole('textbox', { name: 'Ruta local', exact: true }).fill(resolve('.'));
+  await page.getByRole('textbox', { name: 'Ruta local', exact: true }).fill(temporary);
   await expect(page.getByRole('textbox', { name: 'Ruta local', exact: true })).toHaveValue(
-    resolve('.'),
+    temporary,
   );
   await page.getByRole('textbox', { name: 'Ruta local', exact: true }).press('Enter');
   await expect(
     page
       .getByRole('region', { name: 'Fitxers locals', exact: true })
-      .getByText('README.md', { exact: true }),
+      .getByText('smoke-test.txt', { exact: true }),
   ).toBeVisible();
-  await page.getByRole('region', { name: 'Fitxers locals', exact: true }).getByText('README.md', { exact: true }).click({ button: 'right' });
+  await page.getByRole('region', { name: 'Fitxers locals', exact: true }).getByText('smoke-test.txt', { exact: true }).click({ button: 'right' });
   await expect(page.getByRole('menu', { name: 'Menú contextual' }).getByRole('menuitem', { name: 'Propietats' })).toBeVisible();
   await page.keyboard.press('Escape');
   const localOperations = await page.evaluate(async parent => {
@@ -88,32 +88,6 @@ try {
     return !(await window.__TAURI_INTERNALS__.invoke('list_local', { path: parent })).entries.some(item => item.name === 'test-folder');
   }, temporary);
   expect(localOperations).toBe(true);
-  const saved = await page.evaluate(async () => {
-    return window.__TAURI_INTERNALS__.invoke('save_connection', {
-      connection: {
-        id: '',
-        name: 'Temporary native smoke test',
-        host: '127.0.0.1',
-        port: 22,
-        username: 'test',
-        authMethod: 'password',
-        keyPath: null,
-        rememberSecret: false,
-        remotePath: '.',
-        localPath: null,
-        color: '#b5e878',
-      },
-      secret: null,
-    });
-  });
-  profileId = saved.id;
-  const persisted = await page.evaluate(() => window.__TAURI_INTERNALS__.invoke('get_connections'));
-  expect(persisted.some((item) => item.id === profileId)).toBe(true);
-  await page.evaluate(
-    (id) => window.__TAURI_INTERNALS__.invoke('delete_connection', { connectionId: id }),
-    profileId,
-  );
-  profileId = null;
   const validation = await page.evaluate(async () => {
     try {
       await window.__TAURI_INTERNALS__.invoke('list_local', { path: '../outside' });
@@ -127,14 +101,11 @@ try {
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue('en');
-  await mkdir('test-results', { recursive: true });
-  await page.screenshot({ path: 'test-results/native-windows.png' });
   expect(errors).toEqual([]);
   console.log(
     JSON.stringify(
       {
         native: 'passed',
-        profilePersistence: true,
         localListing: true,
         invalidPathRejected: true,
         languagePersistence: true,
@@ -146,18 +117,9 @@ try {
     ),
   );
 } finally {
-  if (page && profileId) {
-    await page
-      .evaluate(
-        (id) => window.__TAURI_INTERNALS__.invoke('delete_connection', { connectionId: id }),
-        profileId,
-      )
-      .catch(() => {});
-  }
   await browser?.close().catch(() => {});
   child.kill();
-  // Only this test's isolated WebView2 cache is removed. App data is untouched
-  // except the exact temporary profile created and deleted through public IPC.
+  // Remove only files created in this test's isolated directory.
   await rm(temporary, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 }).catch(
     () => {},
   );
