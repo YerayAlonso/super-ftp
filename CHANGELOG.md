@@ -1,8 +1,12 @@
 # Changelog
 
-Notable changes will be recorded here. This file describes the current working tree, not a published release.
+Notable changes will be recorded here. The repository and its releases are currently private.
 
 ## Unreleased
+
+- Added a manual Windows installer smoke workflow.
+
+## 0.1.0 — Preview
 
 - SFTP connections with password, key-file and agent authentication, host-key verification and multiple sessions.
 - Local and remote file browsing, recursive transfers, conflict decisions and permanent recursive deletion with confirmation.

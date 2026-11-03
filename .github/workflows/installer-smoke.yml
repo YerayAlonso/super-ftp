@@ -4,15 +4,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  # Draft releases are visible only to identities with repository push access.
-  contents: write
+  contents: read
 
 jobs:
   installer:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - name: Download draft release assets
+      - name: Download release assets
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
