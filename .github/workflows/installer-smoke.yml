@@ -1,0 +1,58 @@
+name: Windows installer smoke test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Download draft release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'superftp-release'
+          New-Item -ItemType Directory -Path $assets | Out-Null
+          gh release download v0.1.0 --repo "${{ github.repository }}" --dir $assets
+          if ($LASTEXITCODE -ne 0) { throw 'Release asset download failed' }
+          $line = Get-Content -LiteralPath (Join-Path $assets 'SHA256SUMS.txt')
+          $parts = $line -split '  ', 2
+          if ($parts.Count -ne 2 -or $parts[1] -ne 'Super.FTP_0.1.0_x64-setup.exe') { throw 'Unexpected checksum file' }
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $assets $parts[1])).Hash
+          if ($hash -ne $parts[0]) { throw 'Installer checksum does not match' }
+
+      - name: Install, launch, reinstall and uninstall
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = Join-Path $env:RUNNER_TEMP 'superftp-release\Super.FTP_0.1.0_x64-setup.exe'
+          $install = Join-Path $env:RUNNER_TEMP 'superftp-install'
+          $binary = Join-Path $install 'super-ftp.exe'
+          $uninstaller = Join-Path $install 'uninstall.exe'
+          $registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Super FTP'
+          if (Test-Path $registration) { throw 'Unexpected pre-existing installation' }
+          function Install-App {
+            $process = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$install") -Wait -PassThru
+            if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
+            if (-not (Test-Path $binary) -or -not (Test-Path $uninstaller)) { throw 'Installed files are missing' }
+          }
+          Install-App
+          if (-not (Test-Path $registration)) { throw 'Uninstall registration is missing' }
+          $app = Start-Process -FilePath $binary -PassThru
+          Start-Sleep -Seconds 10
+          $app.Refresh()
+          if ($app.HasExited) { throw "Installed application exited early: $($app.ExitCode)" }
+          $app.CloseMainWindow() | Out-Null
+          if (-not $app.WaitForExit(10000)) { Stop-Process -Id $app.Id -Force; throw 'Application did not close cleanly' }
+          # A same-version reinstall checks the installer path; it is not an upgrade test.
+          Install-App
+          $process = Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Uninstaller failed: $($process.ExitCode)" }
+          if (Test-Path $binary) { throw 'Executable remains after uninstall' }
+          if (Test-Path $registration) { throw 'Uninstall registration remains' }
