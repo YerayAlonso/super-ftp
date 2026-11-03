@@ -21,4 +21,4 @@ macOS and Linux CI builds pass, but the application and installers have not been
 
 ## Limitations
 
-This preview has not undergone an independent security audit. It supports SFTP, not FTP or FTPS. Folder deletion is permanent and can be partially completed if an error occurs. Remote overwrites use a backup-and-restore procedure rather than portable atomic replacement; interruption or failure can leave backup or partial files. See the [README](../README.md#preview-limitations) and [security notes](../SECURITY.md) for details.
+This preview has not undergone an independent security audit. It supports SFTP, not FTP or FTPS. Folder deletion is permanent and can be partially completed if an error occurs. Remote overwrites use a backup-and-restore procedure rather than portable atomic replacement; interruption or failure can leave backup or partial files. See the [README](https://github.com/YerayAlonso/super-ftp/blob/main/README.md#preview-limitations) and [security notes](https://github.com/YerayAlonso/super-ftp/blob/main/SECURITY.md) for details.
