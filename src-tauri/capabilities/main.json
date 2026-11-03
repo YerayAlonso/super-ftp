@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Only the bundled main window can receive app events and show native file pickers. No shell, HTTP, or filesystem plugins are exposed.",
+  "windows": ["main"],
+  "permissions": ["core:event:default", "dialog:allow-open"]
+}

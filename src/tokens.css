@@ -1,0 +1,82 @@
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+
+:root {
+  color-scheme: dark;
+  --background: #111315;
+  --sidebar: #16181a;
+  --panel: #17191b;
+  --surface: #1b1e20;
+  --raised: #1e2123;
+  --input: #131517;
+  --hover: #24282a;
+  --border: #2a2d2f;
+  --border-strong: #323639;
+  --row-border: #242729;
+  --text: #ecefe9;
+  --text-secondary: #c7ccca;
+  --muted: #a0a8a4;
+  --dim: #8b9490;
+  --faint: #7d8780;
+  --accent: #b5e878;
+  --accent-hover: #c7f394;
+  --accent-text: #b5e878;
+  --accent-ink: #25351a;
+  --accent-soft: #b5e81415;
+  --accent-faint: #b5e87806;
+  --accent-border: #b5e87826;
+  --blue: #8caad2;
+  --blue-soft: #7cb7ff09;
+  --blue-border: #7cb7ff1b;
+  --danger: #ee8b91;
+  --danger-soft: #e66d7510;
+  --danger-border: #e66d7533;
+  --file-icon: #717e85;
+  --folder-icon: #b8c49e;
+  --folder-fill: #b8c49e10;
+  --scrollbar: #3a4143;
+  --overlay-drop: #131b13dd;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --background: #f4f5f1;
+  --sidebar: #ecede8;
+  --panel: #fafbf8;
+  --surface: #f3f5ef;
+  --raised: #fff;
+  --input: #f3f5f0;
+  --hover: #e7ebe1;
+  --border: #dde1d8;
+  --border-strong: #d2d8cc;
+  --row-border: #edf0e9;
+  --text: #202b22;
+  --text-secondary: #445146;
+  --muted: #677568;
+  --dim: #647260;
+  --faint: #737e6c;
+  --accent: #b1de7c;
+  --accent-hover: #a3d36a;
+  --accent-text: #4b712e;
+  --accent-ink: #24391a;
+  --accent-soft: #86ba3920;
+  --accent-faint: #86ba3909;
+  --accent-border: #608a3b30;
+  --blue: #547ba8;
+  --blue-soft: #547ba80b;
+  --blue-border: #547ba825;
+  --danger: #b74550;
+  --danger-soft: #b745500a;
+  --danger-border: #b7455030;
+  --file-icon: #7d8d85;
+  --folder-icon: #6f8650;
+  --folder-fill: #88a25410;
+  --scrollbar: #c6cec1;
+  --overlay-drop: #f0f5edee;
+}

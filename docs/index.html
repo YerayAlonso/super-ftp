@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Super FTP is a preview SFTP desktop client for your servers and files.">
+  <title>Super FTP — your files, your servers</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #101513; color: #f1f6ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: min(100% - 3rem, 64rem); margin: auto; }
+    header { padding: 2rem 0; font-weight: 800; letter-spacing: -.04em; font-size: 1.3rem; }
+    header span { color: #b5e878; }
+    .hero { padding: clamp(3rem, 10vw, 7rem) 0 4rem; max-width: 49rem; }
+    .eyebrow { color: #b5e878; text-transform: uppercase; font-weight: 700; font-size: .75rem; letter-spacing: .14em; }
+    h1 { font-size: clamp(3rem, 9vw, 6rem); letter-spacing: -.065em; line-height: .99; margin: 1rem 0 1.6rem; }
+    .lead { color: #b8c7b8; font-size: clamp(1.1rem, 2vw, 1.35rem); line-height: 1.7; max-width: 42rem; }
+    .notice { border-left: 3px solid #b5e878; padding: .2rem 1.2rem; margin-top: 2.5rem; color: #dce7d9; line-height: 1.6; }
+    .links { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+    .links a { color: #b5e878; text-underline-offset: .25em; }
+    .links a:focus-visible { outline: 2px solid #b5e878; outline-offset: 4px; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; padding-bottom: 5rem; }
+    article { background: #18221b; border: 1px solid #304432; border-radius: .9rem; padding: 1.5rem; }
+    h2 { font-size: 1.1rem; margin: 0 0 .7rem; }
+    article p, footer { color: #b8c7b8; line-height: 1.65; }
+    footer { border-top: 1px solid #304432; padding: 1.5rem 0 3rem; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>super<span>ftp.</span></header>
+    <section class="hero">
+      <div class="eyebrow">SFTP desktop workspace</div>
+      <h1>Your files.<br>Your servers.</h1>
+      <p class="lead">Browse, connect and transfer in one workspace. Super FTP brings local and remote files together over SSH, with a native system webview and no bundled browser engine.</p>
+      <div class="notice"><strong>Functional preview.</strong> Builds are unsigned and the project has not been independently audited. macOS and Linux still need real-device validation. Check the repository's README and release notes for current availability and limitations.</div>
+      <nav class="links" aria-label="Project links"><a href="https://github.com/YerayAlonso/super-ftp">View the repository</a><a href="https://github.com/YerayAlonso/super-ftp/releases">Releases</a></nav>
+    </section>
+    <section class="features" aria-label="Features">
+      <article><h2>All your sessions</h2><p>Work with independent connections in tabs, browse side by side and transfer files and folders.</p></article>
+      <article><h2>Decisions stay yours</h2><p>Verify server fingerprints and choose what to do when a destination file already exists.</p></article>
+      <article><h2>Make it yours</h2><p>Choose from eight languages, light or dark themes, and adjustable interface size.</p></article>
+    </section>
+    <footer>Super FTP · SFTP, not FTP or FTPS · MIT licensed</footer>
+  </main>
+</body>
+</html>

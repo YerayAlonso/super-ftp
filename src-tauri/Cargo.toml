@@ -1,0 +1,40 @@
+[package]
+name = "super-ftp"
+version = "0.1.0"
+description = "A small, secure, cross-platform SFTP workspace"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT"
+
+[lib]
+name = "super_ftp_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["fs", "io-util", "net", "rt-multi-thread", "sync", "time"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+russh = { version = "0.65", default-features = false, features = ["ring", "rsa"] }
+russh-sftp = "3.0.1"
+keyring = "4.2"
+uuid = { version = "1", features = ["v4"] }
+zeroize = "1"
+tempfile = "3"
+sha2 = "0.11"
+dunce = "1"
+
+[dev-dependencies]
+rand = "0.10"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
