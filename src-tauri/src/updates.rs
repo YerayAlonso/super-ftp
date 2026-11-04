@@ -130,7 +130,7 @@ mod tests {
                 body: Some("Preview notes".into()),
             },
             Release {
-                tag_name: "v0.1.1".into(),
+                tag_name: "v0.1.2".into(),
                 draft: false,
                 prerelease: false,
                 body: None,
@@ -143,7 +143,7 @@ mod tests {
             },
         ];
         let stable = select_release(&list, false).unwrap();
-        assert_eq!(stable.latest_version.as_deref(), Some("0.1.1"));
+        assert_eq!(stable.latest_version.as_deref(), Some("0.1.2"));
         assert!(stable.update_available);
         assert!(!stable.prerelease);
         let preview = select_release(&list, true).unwrap();

@@ -4,6 +4,8 @@ Notable changes will be recorded here. The repository and its releases are curre
 
 ## Unreleased
 
+## 0.1.1 — Preview
+
 - Added a manual Windows installer smoke workflow.
 - Added a manual public GitHub release check with optional preview versions; no automatic downloads or installation.
 - Added preliminary third-party license notices and a Windows-targeted inventory; the licensing review remains open.

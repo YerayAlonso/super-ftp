@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { listen } from '@tauri-apps/api/event';
+  import { version as appVersion } from '../package.json';
   import { getCurrentWebview } from '@tauri-apps/api/webview';
   import {
     Activity,
@@ -84,6 +85,9 @@
   let picker = $state(false);
   let pickerSearch = $state('');
   let about = $state(false);
+  let preferencesOpen = $state(false);
+  let updatesOpen = $state(false);
+  let licensesOpen = $state(false);
   let includePrereleases = $state(false);
   let checkingUpdates = $state(false);
   let updateError = $state<DisplayMessage>('');
@@ -800,7 +804,7 @@
       </div>
       <div class="sidebar-bottom-row">
         <span
-          ><span class="tiny-dot"></span>v0.1.0
+          ><span class="tiny-dot"></span>{`v${appVersion}`}
           <span class="version-label">{i18n.t('PREVIEW')}</span></span
         ><button
           class="icon-button"
@@ -820,22 +824,11 @@
         /><strong>{activeTab?.connection.name ?? i18n.t('Home')}</strong>
       </div>
       <div class="topbar-right">
-        <LanguageSelect />
-        <div class="font-size-control" role="group" aria-label={i18n.t('Interface text size')}>
-          <button type="button" aria-label={i18n.t('Decrease text size')} title={i18n.t('Decrease text size')} disabled={fontSize === fontSizes[0]} onclick={() => adjustFontSize(-1)}>A−</button>
-          <button type="button" class="font-size-reset" aria-label={i18n.t('Reset text size')} title={i18n.t('Reset text size')} onclick={() => fontSize = 100}>{fontSize}%</button>
-          <button type="button" aria-label={i18n.t('Increase text size')} title={i18n.t('Increase text size')} disabled={fontSize === fontSizes[fontSizes.length - 1]} onclick={() => adjustFontSize(1)}>A+</button>
-        </div>
         <span class="app-status"
           ><span class="tiny-dot"></span>{i18n.t(
             connecting.length ? 'Connecting…' : activeTab ? 'Secure connection' : 'All set',
           )}</span
-        ><span class="topbar-divider"></span><button
-          class="icon-button"
-          aria-label={i18n.t(theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme')}
-          title={i18n.t('Change theme')}
-          onclick={() => (theme = theme === 'dark' ? 'light' : 'dark')}
-          >{#if theme === 'dark'}<Sun size={17} />{:else}<Moon size={17} />{/if}</button
+        ><span class="topbar-divider"></span><button class="icon-button preferences-trigger" aria-label={i18n.t('Preferences')} title={i18n.t('Preferences')} onclick={() => (preferencesOpen = true)}><SlidersHorizontal size={17} /></button
         ><button class="icon-button" aria-label={i18n.t('Help')} onclick={() => (about = true)}
           ><CircleHelp size={17} /></button
         >
@@ -1237,7 +1230,7 @@
 
 {#if about}<Modal
     title={i18n.t('Small on the outside. Secure on the inside.')}
-    eyebrow={`SUPER FTP · 0.1.0 ${i18n.t('PREVIEW')}`}
+    eyebrow={`SUPER FTP · ${appVersion} ${i18n.t('PREVIEW')}`}
     small
     onClose={() => (about = false)}
     ><p class="dialog-description">
@@ -1264,8 +1257,42 @@
         'Symbolic links and special files are skipped during recursive transfers. Overwriting requires confirmation. Folders can be deleted with all their contents.',
       )}
     </div>
+    <div class="form-note">{i18n.t('macOS and Linux builds have not yet been tested on real devices.')}</div>
+    <div class="help-links">
+      <button class="button secondary" onclick={() => { about = false; licensesOpen = true; void loadThirdPartyNotices(); }}>{i18n.t('Third-party licenses')}</button>
+    </div>
+    {#snippet footer()}<span class="muted">{i18n.t('Made to move files. Nothing more.')}</span><button
+        class="button primary"
+        onclick={() => (about = false)}>{i18n.t('Got it')}<Check size={15} /></button
+      >{/snippet}</Modal
+  >{/if}
+
+{#if preferencesOpen}<Modal title={i18n.t('Preferences')} small onClose={() => (preferencesOpen = false)}>
+    <div class="preferences-section">
+      <strong>{i18n.t('Language')}</strong>
+      <LanguageSelect />
+    </div>
+    <div class="preferences-section">
+      <strong>{i18n.t('Change theme')}</strong>
+      <button class="icon-button" aria-label={i18n.t(theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme')} title={i18n.t('Change theme')} onclick={() => (theme = theme === 'dark' ? 'light' : 'dark')}>{#if theme === 'dark'}<Sun size={17} />{:else}<Moon size={17} />{/if}</button>
+    </div>
+    <div class="preferences-section">
+      <strong>{i18n.t('Interface text size')}</strong>
+      <div class="font-size-control" role="group" aria-label={i18n.t('Interface text size')}>
+        <button type="button" aria-label={i18n.t('Decrease text size')} title={i18n.t('Decrease text size')} disabled={fontSize === fontSizes[0]} onclick={() => adjustFontSize(-1)}>A−</button>
+        <button type="button" class="font-size-reset" aria-label={i18n.t('Reset text size')} title={i18n.t('Reset text size')} onclick={() => fontSize = 100}>{fontSize}%</button>
+        <button type="button" aria-label={i18n.t('Increase text size')} title={i18n.t('Increase text size')} disabled={fontSize === fontSizes[fontSizes.length - 1]} onclick={() => adjustFontSize(1)}>A+</button>
+      </div>
+    </div>
+    <div class="preferences-section">
+      <strong>{i18n.t('Updates')}</strong>
+      <button class="button secondary" onclick={() => { preferencesOpen = false; updatesOpen = true; }}>{i18n.t('Check for updates')}</button>
+    </div>
+    {#snippet footer()}<span></span><button class="button primary" onclick={() => (preferencesOpen = false)}>{i18n.t('Close')}</button>{/snippet}
+  </Modal>{/if}
+
+{#if updatesOpen}<Modal title={i18n.t('Updates')} small onClose={() => (updatesOpen = false)}>
     <section class="update-check" aria-label={i18n.t('Updates')}>
-      <h3>{i18n.t('Updates')}</h3>
       <p>{i18n.t('Checking contacts GitHub without credentials. Nothing is downloaded or installed.')}</p>
       <label><input type="checkbox" bind:checked={includePrereleases} disabled={checkingUpdates} onchange={() => { updateResult = null; updateError = ''; }} /> {i18n.t('Include preview releases')}</label>
       <div class="update-actions">
@@ -1278,17 +1305,18 @@
       {/if}
       {#if updateError}<p class="form-error" role="alert">{i18n.text(updateError)}</p>{/if}
     </section>
-    <details class="third-party-notices" ontoggle={(event) => { if (event.currentTarget.open) void loadThirdPartyNotices(); }}>
-      <summary>{i18n.t('Third-party license notices (Windows snapshot)')}</summary>
+    {#snippet footer()}<span></span><button class="button primary" onclick={() => (updatesOpen = false)}>{i18n.t('Close')}</button>{/snippet}
+  </Modal>{/if}
+
+{#if licensesOpen}<Modal title={i18n.t('Third-party licenses')} onClose={() => (licensesOpen = false)}>
+    <div class="third-party-notices">
+      <p>{i18n.t('Third-party license notices (Windows snapshot)')}</p>
       <!-- The scrollable region needs keyboard focus for users without a mouse. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div class="third-party-notices-text" role="region" aria-label={i18n.t('Third-party license notices (Windows snapshot)')} tabindex="0"><pre>{thirdPartyNotices}</pre></div>
-    </details>
-    {#snippet footer()}<span class="muted">{i18n.t('Made to move files. Nothing more.')}</span><button
-        class="button primary"
-        onclick={() => (about = false)}>{i18n.t('Got it')}<Check size={15} /></button
-      >{/snippet}</Modal
-  >{/if}
+    </div>
+    {#snippet footer()}<span></span><button class="button primary" onclick={() => (licensesOpen = false)}>{i18n.t('Close')}</button>{/snippet}
+  </Modal>{/if}
 
 <div class="toast-stack" aria-live="polite">
   {#each notices as notice (notice.id)}<div
@@ -1308,6 +1336,6 @@
     </div>{/each}
 </div>
 
-{#if waitingConflict && !editor && !picker && !hostPrompt && !loginPrompt && !confirmAction && !textAction && !properties && !about}
+{#if waitingConflict && !editor && !picker && !hostPrompt && !loginPrompt && !confirmAction && !textAction && !properties && !about && !preferencesOpen && !updatesOpen && !licensesOpen}
   {#key waitingConflict.conflict?.id}<ConflictDialog transfer={waitingConflict} />{/key}
 {/if}

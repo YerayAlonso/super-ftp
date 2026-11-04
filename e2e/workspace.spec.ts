@@ -1,5 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
+async function chooseLanguage(page: Page, language: string) {
+  await page.locator('.preferences-trigger').click();
+  await page.getByRole('combobox').selectOption(language);
+  await page.keyboard.press('Escape');
+}
+
 test.beforeEach(async ({ page }, testInfo) => {
   if (testInfo.title.includes('falls back safely') || testInfo.title === 'English is the default language') return;
   await page.addInitScript(() => {
@@ -10,6 +16,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 test('English is the default language', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await page.locator('.preferences-trigger').click();
   await expect(page.getByRole('combobox')).toHaveValue('en');
 });
 
@@ -17,7 +24,9 @@ test('third-party notices are accessible in the help dialog', async ({ page }) =
   await page.goto('/');
   await page.getByRole('button', { name: 'Ajuda', exact: true }).click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByText('Avisos de llicències de tercers (inventari de Windows)').click();
+  await expect(dialog).toContainText('Les versions de macOS i Linux encara no s’han provat en dispositius reals.');
+  await expect(dialog.getByRole('button', { name: 'Comprova si hi ha actualitzacions' })).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Llicències de tercers' }).click();
   const notices = dialog.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' });
   await expect(notices).toContainText('SIL OPEN FONT LICENSE');
   await expect(notices).toContainText('Lucide Icons and Contributors');
@@ -28,9 +37,10 @@ test('third-party notices are accessible in the help dialog', async ({ page }) =
 test('update checks are manual and previews are opt-in', async ({ page }) => {
   await mockDesktop(page);
   await page.goto('/');
-  await page.getByRole('combobox').selectOption('en');
-  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  await chooseLanguage(page, 'en');
+  await page.getByRole('button', { name: 'Preferences', exact: true }).click();
   const dialog = page.getByRole('dialog');
+  await dialog.getByRole('button', { name: 'Check for updates' }).click();
   expect(await page.evaluate(() => (window as any).__superftpTest.calls.some((call: any) => call.command === 'check_updates'))).toBe(false);
   await dialog.getByRole('button', { name: 'Check for updates' }).click();
   await expect(dialog.getByRole('status')).toHaveText('No matching public releases were found.');
@@ -46,10 +56,18 @@ test('update checks are manual and previews are opt-in', async ({ page }) => {
     { command: 'check_updates', args: { includePrereleases: true } },
     { command: 'open_releases_page', args: {} },
   ]);
+  await page.evaluate(() => {
+    (window as any).__superftpTest.setTransfer({ id: 'waiting', sessionId: 'session-1', name: 'photo.png', direction: 'upload', source: 'C:\\Test\\photo.png', destination: '/remote', status: 'awaitingDecision', bytesTransferred: 0, totalBytes: 1, filesTotal: 1, filesDone: 0, skipped: 0, bytesPerSecond: 0, error: null,
+      conflict: { id: 'waiting-conflict', source: 'C:\\Test\\photo.png', destination: '/remote/photo.png', name: 'photo.png', direction: 'upload', sourceSize: 1, destinationSize: 1, destinationModified: null } });
+  });
+  await expect(page.getByRole('dialog', { name: 'The file already exists' })).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'The file already exists' })).toBeVisible();
 });
 
 test('interface text size scales, persists and resets', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Preferències' }).click();
   const increase = page.getByRole('button', { name: 'Augmenta la mida del text' });
   const reset = page.getByRole('button', { name: 'Restableix la mida del text' });
   const body = page.locator('body');
@@ -61,10 +79,13 @@ test('interface text size scales, persists and resets', async ({ page }) => {
   const enlarged = await body.evaluate(element => parseFloat(getComputedStyle(element).fontSize) * parseFloat(getComputedStyle(document.documentElement).zoom));
   expect(enlarged).toBeGreaterThan(original);
   await page.reload();
+  await page.getByRole('button', { name: 'Preferències' }).click();
   await expect(reset).toHaveText('120%');
+  await page.getByRole('dialog').getByRole('button', { name: 'Tanca', exact: true }).click();
   await page.getByRole('button', { name: 'Nova connexió', exact: false }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Preferències' }).click();
   await reset.click();
   await expect(reset).toHaveText('100%');
 });
@@ -510,7 +531,7 @@ const languageCases = [
 test('conflicts are queued, localized and resolved without losing the requested destination', async ({ page }) => {
   await mockDesktop(page);
   await page.goto('/');
-  await page.getByRole('combobox').selectOption('en');
+  await chooseLanguage(page, 'en');
   await page.evaluate(() => {
     const task = { id: 'conflict-1', sessionId: 'session-1', name: 'photo.png', direction: 'upload', source: 'C:\\Test\\photo.png', destination: '/remote', status: 'awaitingDecision', bytesTransferred: 0, totalBytes: 100, filesTotal: 1, filesDone: 0, skipped: 0, bytesPerSecond: 0, error: null,
       conflict: { id: 'one', source: 'C:\\Test\\photo.png', destination: '/remote/photo.png', name: 'photo.png', direction: 'upload', sourceSize: 100, destinationSize: 200, destinationModified: null } };
@@ -537,7 +558,7 @@ for (const [language, newConnection, heading, remote, nameLabel, save, error] of
       if (message.text().includes('[svelte]')) errors.push(message.text());
     });
     await page.goto('/');
-    await page.getByRole('combobox').selectOption(language);
+    await chooseLanguage(page, language);
     await expect(page.locator('html')).toHaveAttribute('lang', language);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
     await expect(page.getByRole('heading', { name: remote, exact: true })).toBeVisible();
@@ -545,7 +566,9 @@ for (const [language, newConnection, heading, remote, nameLabel, save, error] of
     expect(await page.evaluate(() => localStorage.getItem('superftp-language'))).toBe(language);
     await page.reload();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+    await page.locator('.preferences-trigger').click();
     await expect(page.getByRole('combobox')).toHaveValue(language);
+    await page.keyboard.press('Escape');
     await page.locator('.new-connection').click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(nameLabel, { exact: true }).fill('Profile <test> {name}');
@@ -572,7 +595,7 @@ test('changing language preserves live sessions, localizes existing errors and u
   await expect(page.getByRole('textbox', { name: 'Ruta remota', exact: true })).toHaveValue(
     '/home/test',
   );
-  await page.getByRole('combobox').selectOption('en');
+  await chooseLanguage(page, 'en');
   await expect(page.getByRole('tab', { name: 'Entorn de proves' })).toHaveAttribute(
     'aria-selected',
     'true',
@@ -591,7 +614,7 @@ test('changing language preserves live sessions, localizes existing errors and u
   await page.getByRole('textbox', { name: 'Remote path', exact: true }).fill('/blocked');
   await page.getByRole('textbox', { name: 'Remote path', exact: true }).press('Enter');
   await expect(page.getByRole('alert')).toHaveText('The remote path is invalid.');
-  await page.getByRole('combobox').selectOption('es');
+  await chooseLanguage(page, 'es');
   await expect(page.getByRole('alert')).toHaveText('La ruta remota no es válida.');
   await expect(
     page
@@ -639,7 +662,9 @@ test('web preview is honest, theme works, and secrets are not persisted', async 
   await page.goto('/');
   await expect(page.getByText('Vista web de la interfície.', { exact: false })).toBeVisible();
   await page.screenshot({ path: 'test-results/workspace-dark.png' });
+  await page.locator('.preferences-trigger').click();
   await page.getByRole('button', { name: 'Activa el tema clar' }).click();
+  await page.keyboard.press('Escape');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.screenshot({ path: 'test-results/workspace-light.png' });
   await page.reload();

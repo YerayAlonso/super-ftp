@@ -20,9 +20,9 @@ This is a **functional preview**, not an independently audited or signed product
 - Transfer files and folders, including empty folders. The queue shows progress and speed, allows cancellation and manual retries, and runs at most three transfers globally and two per session.
 - When a destination file exists, choose **Overwrite**, **Rename the new file**, **Skip this file** or **Cancel the entire transfer**. Conflicts in recursive transfers are handled individually. Renaming only changes the destination filename. Existing folders are merged; files within them are checked individually.
 - Use context menus to create folders, view properties, transfer or delete files. Remote entries can also be renamed. Deletion is permanent, requires confirmation and removes folders with their contents. Remote deletion is limited to 100,000 items and 64 levels; failures can leave a partially deleted tree.
-- Change languages instantly without interrupting sessions. The choice is stored locally; English is the default when no valid choice is saved. Application-owned backend errors have English fallbacks. OS, SSH and SFTP library details may use their original language.
-- Adjust the interface text size from 80% to 130% in the top bar; the choice is stored locally. The whole interface scales together to keep controls and file lists aligned.
-- Manually check GitHub for newer public releases from the Help dialog, optionally including previews. No credentials are sent and nothing is downloaded or installed automatically. Private releases are not accessible through this check; the check considers at most the 100 most recent public releases.
+- Change languages instantly in Preferences without interrupting sessions. The choice is stored locally; English is the default when no valid choice is saved. Application-owned backend errors have English fallbacks. OS, SSH and SFTP library details may use their original language.
+- Adjust the interface text size from 80% to 130% in Preferences; the choice is stored locally. The whole interface scales together to keep controls and file lists aligned.
+- Manually check GitHub for newer public releases from Preferences, optionally including previews. No credentials are sent and nothing is downloaded or installed automatically. Private releases are not accessible through this check; the check considers at most the 100 most recent public releases.
 
 ## Development
 
@@ -85,7 +85,7 @@ The CI workflow targets Windows, macOS and Linux; a workflow file alone does not
 4. Open a remote folder and drag in local files. To download, select remote items and use the arrow toward the local pane, or double-click a file.
 5. **New session** opens another tab, including for the same profile. Clicking a saved profile activates its first existing session; its menu can open another.
 
-The language selector is in the top bar. The SSH agent uses `SSH_AUTH_SOCK` on macOS/Linux and the Windows OpenSSH `ssh-agent` named pipe on Windows. The app does not start an agent or enable agent forwarding.
+Language, theme and interface size are available in Preferences. The SSH agent uses `SSH_AUTH_SOCK` on macOS/Linux and the Windows OpenSSH `ssh-agent` named pipe on Windows. The app does not start an agent or enable agent forwarding.
 
 ## Data and security
 

@@ -55,10 +55,13 @@ try {
   page = context.pages()[0] ?? (await context.waitForEvent('page'));
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.getByRole('combobox').waitFor();
+  await page.locator('.preferences-trigger').click();
   await page.getByRole('combobox').selectOption('en');
+  await page.keyboard.press('Escape');
   await expect(page.getByRole('heading', { name: 'Your files, in good hands.' })).toBeVisible();
+  await page.locator('.preferences-trigger').click();
   await page.getByRole('combobox', { name: 'Language' }).selectOption('ca');
+  await page.keyboard.press('Escape');
   // Wait until the startup listing is populated before editing the address;
   // a reload can otherwise finish the home request during Playwright's fill.
   await expect(page.locator('.file-pane:not(.remote-pane) .pane-footer')).not.toContainText(
@@ -80,9 +83,13 @@ try {
   await expect(page.getByRole('menu', { name: 'Menú contextual' }).getByRole('menuitem', { name: 'Propietats' })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Ajuda', exact: true }).click();
-  const help = page.getByRole('dialog');
-  await help.getByText('Avisos de llicències de tercers (inventari de Windows)').click();
+  let help = page.getByRole('dialog');
+  await help.getByRole('button', { name: 'Llicències de tercers' }).click();
   await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('SIL OPEN FONT LICENSE');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Preferències', exact: true }).click();
+  help = page.getByRole('dialog');
+  await help.getByRole('button', { name: 'Comprova si hi ha actualitzacions', exact: true }).click();
   const updates = help.getByRole('region', { name: 'Actualitzacions' });
   await updates.getByRole('button', { name: 'Comprova si hi ha actualitzacions' }).click();
   await expect(updates.locator('[role="status"], [role="alert"]')).toBeVisible({ timeout: 20000 });
@@ -105,9 +112,12 @@ try {
     }
   });
   expect(validation).toBe(true);
+  await page.locator('.preferences-trigger').click();
   await page.getByRole('combobox', { name: 'Idioma' }).selectOption('en');
+  await page.keyboard.press('Escape');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await page.locator('.preferences-trigger').click();
   await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue('en');
   expect(errors).toEqual([]);
   console.log(

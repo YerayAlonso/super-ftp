@@ -1,6 +1,9 @@
 import type { Translations } from './types';
 
 export const updates = {
+  'macOS and Linux builds have not yet been tested on real devices.': { ca: 'Les versions de macOS i Linux encara no s’han provat en dispositius reals.', es: 'Las versiones de macOS y Linux aún no se han probado en dispositivos reales.', fr: 'Les versions macOS et Linux n’ont pas encore été testées sur des appareils réels.', de: 'Die macOS- und Linux-Versionen wurden noch nicht auf echten Geräten getestet.', it: 'Le versioni macOS e Linux non sono ancora state testate su dispositivi reali.', pt: 'As versões para macOS e Linux ainda não foram testadas em dispositivos reais.', nl: 'De macOS- en Linux-versies zijn nog niet op echte apparaten getest.' },
+  'Preferences': { ca: 'Preferències', es: 'Preferencias', fr: 'Préférences', de: 'Einstellungen', it: 'Preferenze', pt: 'Preferências', nl: 'Voorkeuren' },
+  'Third-party licenses': { ca: 'Llicències de tercers', es: 'Licencias de terceros', fr: 'Licences tierces', de: 'Drittanbieterlizenzen', it: 'Licenze di terze parti', pt: 'Licenças de terceiros', nl: 'Licenties van derden' },
   'Updates': { ca: 'Actualitzacions', es: 'Actualizaciones', fr: 'Mises à jour', de: 'Updates', it: 'Aggiornamenti', pt: 'Atualizações', nl: 'Updates' },
   'Check for updates': { ca: 'Comprova si hi ha actualitzacions', es: 'Buscar actualizaciones', fr: 'Rechercher des mises à jour', de: 'Nach Updates suchen', it: 'Cerca aggiornamenti', pt: 'Procurar atualizações', nl: 'Controleren op updates' },
   'Include preview releases': { ca: 'Inclou versions preliminars', es: 'Incluir versiones preliminares', fr: 'Inclure les versions préliminaires', de: 'Vorabversionen einschließen', it: 'Includi versioni preliminari', pt: 'Incluir versões preliminares', nl: 'Voorlopige versies opnemen' },
