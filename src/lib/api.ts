@@ -70,6 +70,8 @@ async function command<T>(name: string, args?: Record<string, unknown>): Promise
 }
 
 export const api = {
+  checkUpdates: (includePrereleases: boolean) => command<{ currentVersion: string; latestVersion: string | null; updateAvailable: boolean; prerelease: boolean; releaseNotes: string | null }>('check_updates', { includePrereleases }),
+  openReleasesPage: () => command<void>('open_releases_page'),
   connections: () => command<Connection[]>('get_connections'),
   saveConnection: (connection: Connection, secret: string | null) =>
     command<Connection>('save_connection', { connection, secret }),

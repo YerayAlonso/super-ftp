@@ -19,15 +19,15 @@ export const about = {
     pt: 'Pequeno por fora. Seguro por dentro.',
     nl: 'Klein van buiten. Veilig van binnen.',
   },
-  'An SFTP client built with Rust, Tauri and the system webview. No Electron, telemetry or cloud services. Profiles stay on your device; secrets stay in the system credential store.':
+  'An SFTP client built with Rust, Tauri and the system webview. No Electron or telemetry. Profiles stay on your device; secrets stay in the system credential store.':
     {
-      es: 'Un cliente SFTP con Rust, Tauri y la webview del sistema. Sin Electron, telemetría ni servicios en la nube. Los perfiles se guardan en el dispositivo y los secretos, en el almacén seguro del sistema.',
-      ca: 'Un client SFTP amb Rust, Tauri i la webview del sistema. Sense Electron, telemetria ni serveis al núvol. Els perfils es guarden al dispositiu i els secrets, al magatzem segur del sistema.',
-      fr: 'Un client SFTP avec Rust, Tauri et la webview du système. Sans Electron, télémétrie ni services cloud. Les profils restent sur l’appareil et les secrets dans le coffre du système.',
-      de: 'Ein SFTP-Client mit Rust, Tauri und der System-Webview. Ohne Electron, Telemetrie oder Cloud-Dienste. Profile bleiben auf deinem Gerät, Geheimnisse im sicheren Systemspeicher.',
-      it: 'Un client SFTP con Rust, Tauri e la webview di sistema. Senza Electron, telemetria o servizi cloud. I profili restano sul dispositivo e i segreti nell’archivio sicuro del sistema.',
-      pt: 'Um cliente SFTP com Rust, Tauri e a webview do sistema. Sem Electron, telemetria ou serviços na nuvem. Os perfis ficam no dispositivo e os segredos no armazenamento seguro do sistema.',
-      nl: 'Een SFTP-client met Rust, Tauri en de systeemwebview. Zonder Electron, telemetrie of clouddiensten. Profielen blijven op je apparaat en geheimen in de beveiligde systeemopslag.',
+      es: 'Un cliente SFTP con Rust, Tauri y la webview del sistema. Sin Electron ni telemetría. Los perfiles se guardan en el dispositivo y los secretos, en el almacén seguro del sistema.',
+      ca: 'Un client SFTP amb Rust, Tauri i la webview del sistema. Sense Electron ni telemetria. Els perfils es guarden al dispositiu i els secrets, al magatzem segur del sistema.',
+      fr: 'Un client SFTP avec Rust, Tauri et la webview du système. Sans Electron ni télémétrie. Les profils restent sur l’appareil et les secrets dans le coffre du système.',
+      de: 'Ein SFTP-Client mit Rust, Tauri und der System-Webview. Ohne Electron oder Telemetrie. Profile bleiben auf deinem Gerät, Geheimnisse im sicheren Systemspeicher.',
+      it: 'Un client SFTP con Rust, Tauri e la webview di sistema. Senza Electron o telemetria. I profili restano sul dispositivo e i segreti nell’archivio sicuro del sistema.',
+      pt: 'Um cliente SFTP com Rust, Tauri e a webview do sistema. Sem Electron ou telemetria. Os perfis ficam no dispositivo e os segredos no armazenamento seguro do sistema.',
+      nl: 'Een SFTP-client met Rust, Tauri en de systeemwebview. Zonder Electron of telemetrie. Profielen blijven op je apparaat en geheimen in de beveiligde systeemopslag.',
     },
   'Server host key verification': {
     es: 'Verificación de la clave del servidor',

@@ -6,6 +6,7 @@ mod ssh;
 mod state;
 mod storage;
 mod transfer;
+mod updates;
 
 #[cfg(test)]
 mod integration_tests;
@@ -41,6 +42,8 @@ pub fn run() {
             commands::cancel_transfer,
             commands::resolve_transfer_conflict,
             commands::clear_finished_transfers,
+            updates::check_updates,
+            updates::open_releases_page,
         ])
         .run(tauri::generate_context!())
         .expect("No s’ha pogut iniciar Super FTP");

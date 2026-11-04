@@ -22,6 +22,7 @@ This is a **functional preview**, not an independently audited or signed product
 - Use context menus to create folders, view properties, transfer or delete files. Remote entries can also be renamed. Deletion is permanent, requires confirmation and removes folders with their contents. Remote deletion is limited to 100,000 items and 64 levels; failures can leave a partially deleted tree.
 - Change languages instantly without interrupting sessions. The choice is stored locally; English is the default when no valid choice is saved. Application-owned backend errors have English fallbacks. OS, SSH and SFTP library details may use their original language.
 - Adjust the interface text size from 80% to 130% in the top bar; the choice is stored locally. The whole interface scales together to keep controls and file lists aligned.
+- Manually check GitHub for newer public releases from the Help dialog, optionally including previews. No credentials are sent and nothing is downloaded or installed automatically. Private releases are not accessible through this check; the check considers at most the 100 most recent public releases.
 
 ## Development
 

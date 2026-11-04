@@ -7,6 +7,7 @@ import { about } from './about';
 import { errors } from './errors';
 import { context } from './context';
 import { conflicts } from './conflicts';
+import { updates } from './updates';
 import { languages, type Language, type MessageParams } from './types';
 
 export const messageGroups = [
@@ -19,6 +20,7 @@ export const messageGroups = [
   errors,
   context,
   conflicts,
+  updates,
 ];
 export const messages = {
   ...common,
@@ -30,6 +32,7 @@ export const messages = {
   ...errors,
   ...context,
   ...conflicts,
+  ...updates,
 };
 export type MessageKey = keyof typeof messages;
 export interface Message {

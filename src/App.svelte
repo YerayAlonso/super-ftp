@@ -84,6 +84,23 @@
   let picker = $state(false);
   let pickerSearch = $state('');
   let about = $state(false);
+  let includePrereleases = $state(false);
+  let checkingUpdates = $state(false);
+  let updateError = $state<DisplayMessage>('');
+  let updateResult = $state<Awaited<ReturnType<typeof api.checkUpdates>> | null>(null);
+  async function checkUpdates() {
+    if (checkingUpdates) return;
+    checkingUpdates = true;
+    updateError = '';
+    updateResult = null;
+    try { updateResult = await api.checkUpdates(includePrereleases); }
+    catch (cause) { updateError = errorMessage(cause); }
+    finally { checkingUpdates = false; }
+  }
+  async function openReleasesPage() {
+    try { await api.openReleasesPage(); }
+    catch (cause) { updateError = errorMessage(cause); }
+  }
   let thirdPartyNotices = $state('');
   async function loadThirdPartyNotices() {
     if (!thirdPartyNotices) thirdPartyNotices = (await import('./lib/third-party-notices.txt?raw')).default;
@@ -1225,7 +1242,7 @@
     onClose={() => (about = false)}
     ><p class="dialog-description">
       {i18n.t(
-        'An SFTP client built with Rust, Tauri and the system webview. No Electron, telemetry or cloud services. Profiles stay on your device; secrets stay in the system credential store.',
+        'An SFTP client built with Rust, Tauri and the system webview. No Electron or telemetry. Profiles stay on your device; secrets stay in the system credential store.',
       )}
     </p>
     <div class="about-features">
@@ -1247,6 +1264,20 @@
         'Symbolic links and special files are skipped during recursive transfers. Overwriting requires confirmation. Folders can be deleted with all their contents.',
       )}
     </div>
+    <section class="update-check" aria-label={i18n.t('Updates')}>
+      <h3>{i18n.t('Updates')}</h3>
+      <p>{i18n.t('Checking contacts GitHub without credentials. Nothing is downloaded or installed.')}</p>
+      <label><input type="checkbox" bind:checked={includePrereleases} disabled={checkingUpdates} onchange={() => { updateResult = null; updateError = ''; }} /> {i18n.t('Include preview releases')}</label>
+      <div class="update-actions">
+        <button class="button secondary" disabled={checkingUpdates} onclick={checkUpdates}>{i18n.t('Check for updates')}</button>
+        <button class="button ghost" onclick={openReleasesPage}>{i18n.t('Open GitHub releases')}</button>
+      </div>
+      {#if updateResult}
+        <p role="status">{#if !updateResult.latestVersion}{i18n.t('No matching public releases were found.')}{:else if updateResult.updateAvailable}{i18n.t('A newer version is available: {version}', { version: updateResult.latestVersion })}{#if updateResult.prerelease} · {i18n.t('Preview release')}{/if}{:else}{i18n.t('No newer version was found.')}{/if}</p>
+        {#if updateResult.updateAvailable && updateResult.releaseNotes}<div class="update-notes"><strong>{i18n.t('Release notes')}</strong><pre>{updateResult.releaseNotes}</pre><p>{i18n.t('Notes may be shortened; see GitHub for the full text.')}</p></div>{/if}
+      {/if}
+      {#if updateError}<p class="form-error" role="alert">{i18n.text(updateError)}</p>{/if}
+    </section>
     <details class="third-party-notices" ontoggle={(event) => { if (event.currentTarget.open) void loadThirdPartyNotices(); }}>
       <summary>{i18n.t('Third-party license notices (Windows snapshot)')}</summary>
       <!-- The scrollable region needs keyboard focus for users without a mouse. -->

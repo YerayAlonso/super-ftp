@@ -83,6 +83,9 @@ try {
   const help = page.getByRole('dialog');
   await help.getByText('Avisos de llicències de tercers (inventari de Windows)').click();
   await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('SIL OPEN FONT LICENSE');
+  const updates = help.getByRole('region', { name: 'Actualitzacions' });
+  await updates.getByRole('button', { name: 'Comprova si hi ha actualitzacions' }).click();
+  await expect(updates.locator('[role="status"], [role="alert"]')).toBeVisible({ timeout: 20000 });
   await page.keyboard.press('Escape');
   const localOperations = await page.evaluate(async parent => {
     await window.__TAURI_INTERNALS__.invoke('create_local_directory', { parent, name: 'test-folder' });
@@ -116,6 +119,7 @@ try {
         languagePersistence: true,
         contextMenuAndLocalOperations: true,
         thirdPartyNotices: true,
+        updateCheckResponse: true,
         rendererErrors: errors.length,
       },
       null,
