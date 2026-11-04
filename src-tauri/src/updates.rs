@@ -163,6 +163,17 @@ pub async fn install_signed_update(
     let bytes = download_verified(&client, &update).await?;
     // Holding this lock prevents enqueue from starting new tasks between the
     // active-transfer check and the Windows updater closing the application.
+    let tasks = lock_idle_transfers(&state).await?;
+    update.install(bytes).map_err(|_| fail())?;
+    drop(tasks);
+    Ok(())
+}
+
+async fn lock_idle_transfers(
+    state: &AppState,
+) -> AppResult<
+    tokio::sync::MutexGuard<'_, std::collections::HashMap<String, crate::state::TransferTask>>,
+> {
     let tasks = state.transfers.lock().await;
     if tasks.values().any(|task| task.transfer.status.is_active()) {
         return Err(AppError::new(
@@ -170,9 +181,7 @@ pub async fn install_signed_update(
             "Finish or cancel active transfers before installing an update.",
         ));
     }
-    update.install(bytes).map_err(|_| fail())?;
-    drop(tasks);
-    Ok(())
+    Ok(tasks)
 }
 
 async fn download_verified(
@@ -322,6 +331,77 @@ pub async fn open_releases_page() -> AppResult<()> {
 mod tests {
     use super::*;
     use base64::{Engine as _, engine::general_purpose::STANDARD};
+
+    #[tokio::test]
+    async fn install_guard_rejects_active_transfers_and_excludes_queue_mutation() {
+        use crate::models::{Direction, Transfer, TransferStatus};
+        use crate::state::TransferTask;
+        use tokio_util::sync::CancellationToken;
+
+        let temp = tempfile::tempdir().unwrap();
+        let state = AppState::new(crate::storage::Store::load(temp.path().join("config")).unwrap());
+        let transfer = Transfer {
+            id: "test".into(),
+            session_id: "session".into(),
+            name: "file".into(),
+            direction: Direction::Upload,
+            source: "source".into(),
+            destination: "destination".into(),
+            status: TransferStatus::Queued,
+            bytes_transferred: 0,
+            total_bytes: 0,
+            files_total: 0,
+            files_done: 0,
+            skipped: 0,
+            bytes_per_second: 0,
+            error: None,
+            error_translation: None,
+            conflict: None,
+        };
+        state.transfers.lock().await.insert(
+            "test".into(),
+            TransferTask {
+                transfer,
+                cancel: CancellationToken::new(),
+                decision: None,
+            },
+        );
+        for status in [
+            TransferStatus::Queued,
+            TransferStatus::Preparing,
+            TransferStatus::Transferring,
+            TransferStatus::AwaitingDecision,
+        ] {
+            state
+                .transfers
+                .lock()
+                .await
+                .get_mut("test")
+                .unwrap()
+                .transfer
+                .status = status;
+            assert!(lock_idle_transfers(&state).await.is_err());
+        }
+        for status in [
+            TransferStatus::Completed,
+            TransferStatus::Failed,
+            TransferStatus::Cancelled,
+        ] {
+            state
+                .transfers
+                .lock()
+                .await
+                .get_mut("test")
+                .unwrap()
+                .transfer
+                .status = status;
+            let guard = lock_idle_transfers(&state).await.unwrap();
+            // Enqueue uses this same mutex before inserting or spawning work.
+            assert!(state.transfers.try_lock().is_err());
+            drop(guard);
+            assert!(state.transfers.try_lock().is_ok());
+        }
+    }
 
     // Public throwaway test vector from tauri-plugin-updater's offline tests
     // (Apache-2.0 OR MIT); it is not the project's signing key.
