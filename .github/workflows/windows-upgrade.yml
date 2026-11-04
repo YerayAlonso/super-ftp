@@ -18,7 +18,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          foreach ($version in @('0.1.0', '0.1.1')) {
+          foreach ($version in @('0.1.1', '0.1.2')) {
             $dir = Join-Path $env:RUNNER_TEMP "superftp-$version"
             New-Item -ItemType Directory -Path $dir | Out-Null
             gh release download "v$version" --repo "${{ github.repository }}" --dir $dir
@@ -37,7 +37,7 @@ jobs:
           $uninstaller = Join-Path $install 'uninstall.exe'
           $registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Super FTP'
           if (Test-Path $registration) { throw 'Unexpected pre-existing installation' }
-          foreach ($version in @('0.1.0', '0.1.1')) {
+          foreach ($version in @('0.1.1', '0.1.2')) {
             $installer = Join-Path $env:RUNNER_TEMP "superftp-$version\Super.FTP_${version}_x64-setup.exe"
             $process = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$install") -Wait -PassThru
             if ($process.ExitCode -ne 0) { throw "Installer $version failed: $($process.ExitCode)" }
@@ -50,8 +50,8 @@ jobs:
             if ($app.HasExited) { throw "Application $version exited early: $($app.ExitCode)" }
             $app.CloseMainWindow() | Out-Null
             if (-not $app.WaitForExit(10000)) { Stop-Process -Id $app.Id -Force; throw "Application $version did not close cleanly" }
-            if ($version -eq '0.1.1') {
-              $expected = (Get-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'superftp-0.1.1\EXECUTABLE-SHA256.txt')).Trim()
+            if ($version -eq '0.1.2') {
+              $expected = (Get-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'superftp-0.1.2\EXECUTABLE-SHA256.txt')).Trim()
               $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $binary).Hash
               if ($actual -ne $expected) { throw 'Installed executable differs from the locally tested binary' }
             }
