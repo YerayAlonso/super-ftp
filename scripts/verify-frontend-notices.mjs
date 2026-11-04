@@ -1,0 +1,28 @@
+// Check Vite's actual JS module graph against the generated notice snapshot.
+// This does not cover every Rust binary or separately emitted asset.
+import { readFileSync } from 'node:fs';
+import { build } from 'vite';
+
+const notices = readFileSync('src/lib/third-party-notices.txt', 'utf8');
+const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
+const result = await build({ configFile: 'vite.config.ts', logLevel: 'silent', build: { write: false } });
+const outputs = Array.isArray(result) ? result : [result];
+const modules = outputs.flatMap((entry) => entry.output ?? []).flatMap((entry) => Object.keys(entry.modules ?? {}));
+const bundled = new Set();
+for (const id of modules) {
+  const path = id.replaceAll('\\', '/').split('?')[0];
+  const index = path.lastIndexOf('/node_modules/');
+  if (index < 0) continue;
+  const segments = path.slice(index + '/node_modules/'.length).split('/');
+  bundled.add(segments[0].startsWith('@') ? `${segments[0]}/${segments[1]}` : segments[0]);
+}
+// The font is emitted as a CSS asset rather than a JavaScript module.
+bundled.add('@fontsource-variable/inter');
+for (const name of [...bundled].sort()) {
+  const pkg = lock.packages[`node_modules/${name}`];
+  if (!pkg) throw new Error(`No top-level lockfile entry for bundled package ${name}; review nested package mapping.`);
+  const label = `npm: ${name} ${pkg.version} (${pkg.license ?? 'unknown license'})`;
+  if (!notices.includes(label)) throw new Error(`No generated notice for bundled package ${name}.`);
+  console.log(`${name} ${pkg.version}: notice present`);
+}
+console.log(`Checked ${bundled.size} frontend packages. Review source, attribution, and assets separately.`);

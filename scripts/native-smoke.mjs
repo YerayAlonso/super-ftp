@@ -23,7 +23,7 @@ const tempRoot = process.env.LOCALAPPDATA
 await mkdir(tempRoot, { recursive: true });
 const temporary = await mkdtemp(join(tempRoot, 'superftp-smoke-'));
 await writeFile(join(temporary, 'smoke-test.txt'), 'Temporary test file');
-const executable = resolve('src-tauri/target/release/super-ftp.exe');
+const executable = resolve(process.env.SUPERFTP_SMOKE_EXECUTABLE ?? 'src-tauri/target/release/super-ftp.exe');
 const child = spawn(executable, [], {
   env: {
     ...process.env,
