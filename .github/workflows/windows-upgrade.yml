@@ -12,12 +12,6 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: actions/setup-node@v7.1.0
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
       - name: Download and verify releases
         env:
           GH_TOKEN: ${{ github.token }}
@@ -57,9 +51,9 @@ jobs:
             $app.CloseMainWindow() | Out-Null
             if (-not $app.WaitForExit(10000)) { Stop-Process -Id $app.Id -Force; throw "Application $version did not close cleanly" }
             if ($version -eq '0.1.1') {
-              $env:SUPERFTP_SMOKE_EXECUTABLE = $binary
-              node scripts/native-smoke.mjs
-              if ($LASTEXITCODE -ne 0) { throw 'Installed application smoke test failed' }
+              $expected = (Get-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'superftp-0.1.1\EXECUTABLE-SHA256.txt')).Trim()
+              $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $binary).Hash
+              if ($actual -ne $expected) { throw 'Installed executable differs from the locally tested binary' }
             }
           }
           $process = Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait -PassThru
