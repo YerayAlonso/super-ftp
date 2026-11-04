@@ -29,4 +29,12 @@ Super FTP is a preview. It has not undergone an independent security audit and c
 
 Run `npm audit`, `npm audit --omit=dev` and a RustSec audit (`cargo audit`) before release. At the time this preview was prepared, the full npm audit reported a low-severity `deepmerge` advisory through the development-only Svelte/Vite plugin (GHSA-gcqx-w48m-w2h4), with no upstream fix available; the production-only npm audit reported no advisories. Recheck current results before distribution.
 
+### RSA timing advisory
+
+As of 2026-11-04, the lockfile includes `rsa 0.10.0-rc.18` via `russh` and `ssh-key`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). RustSec reports no fixed version. The advisory describes potential private-key recovery via timing leakage and highlights padding; its applicability and practical exploitability in this SSH client have not been established.
+
+For RSA key-file authentication, Super FTP loads the private key and `russh` delegates signing to `ssh-key` and `rsa`. In the locked versions, this signing path invokes an RSA private operation without blinding. That is not itself proof that the advisory's padding-oracle attack applies to SSH signatures, nor proof that this signing path is safe from timing leakage. SSH agent authentication instead delegates signing to the external agent, whose implementation and risks must be assessed separately. This distinction does not establish that other uses of the dependency are unaffected.
+
+Where supported, prefer Ed25519 keys for new connections while this is investigated. Existing RSA authentication remains available for compatibility. Review the advisory and dependencies again before distribution; the scheduled and manually runnable dependency-security workflow reports findings separately from normal build CI, without ignoring this advisory.
+
 Do not publish passwords, private keys, memory dumps or private server configuration in an issue. The repository maintainer must enable GitHub private vulnerability reporting or provide another private contact before public launch. Until a private channel is established, do not post vulnerability details publicly; contact the maintainer privately if you have a secure way to do so.
