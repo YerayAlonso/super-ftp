@@ -24,7 +24,6 @@ test('third-party notices are accessible in the help dialog', async ({ page }) =
   await page.goto('/');
   await page.getByRole('button', { name: 'Ajuda', exact: true }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog).toContainText('Les versions de macOS i Linux encara no s’han provat en dispositius reals.');
   await expect(dialog.getByRole('button', { name: 'Comprova si hi ha actualitzacions' })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Llicències de tercers' }).click();
   const notices = dialog.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' });

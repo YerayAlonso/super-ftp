@@ -1257,7 +1257,6 @@
         'Symbolic links and special files are skipped during recursive transfers. Overwriting requires confirmation. Folders can be deleted with all their contents.',
       )}
     </div>
-    <div class="form-note">{i18n.t('macOS and Linux builds have not yet been tested on real devices.')}</div>
     <div class="help-links">
       <button class="button secondary" onclick={() => { about = false; licensesOpen = true; void loadThirdPartyNotices(); }}>{i18n.t('Third-party licenses')}</button>
     </div>
