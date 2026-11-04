@@ -86,6 +86,7 @@ try {
   let help = page.getByRole('dialog');
   await help.getByRole('button', { name: 'Llicències de tercers' }).click();
   await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('SIL OPEN FONT LICENSE');
+  await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('npm: @tauri-apps/api 2.12.4 (Apache-2.0 OR MIT) — LICENSE-MIT');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Preferències', exact: true }).click();
   help = page.getByRole('dialog');
