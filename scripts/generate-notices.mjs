@@ -62,7 +62,7 @@ for (const [directory, pkg] of Object.entries(lock.packages)) {
   if (installed.version !== pkg.version) {
     throw new Error(`Installed version of ${directory} does not match package-lock.json. Run npm ci.`);
   }
-  const notices = readdirSync(directory).filter((name) => /^(licen[cs]e|copying|notice)(\.|$)/i.test(name));
+  const notices = readdirSync(directory).filter((name) => /^(?:(?:third[-_ ]party[-_ ])?(?:licen[cs]e|copying|notice))([._-]|$)/i.test(name));
   const label = `${directory.replace(/^node_modules\//, '')} ${pkg.version} (${pkg.license ?? 'unknown license'})`;
   if (!notices.length) { missing.push(label); continue; }
   for (const name of notices) {
