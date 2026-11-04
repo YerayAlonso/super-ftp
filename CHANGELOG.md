@@ -1,8 +1,8 @@
 # Changelog
 
-Notable changes will be recorded here. The repository and its releases are currently private.
+Notable changes will be recorded here.
 
-## Unreleased
+## 0.1.2 — Preview
 
 - Integrated manual update checks, preview selection and release notes into Preferences without opening a separate dialog.
 - Added scheduled and manual dependency security checks and documented the unresolved RSA timing advisory.

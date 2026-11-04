@@ -8,7 +8,7 @@ This is a **functional preview**, not an independently audited or signed product
 
 [Features](#features) · [Get started](#getting-started) · [Build from source](#development) · [Security](SECURITY.md) · [Contribute](CONTRIBUTING.md) · [Release checklist](RELEASING.md)
 
-> **Looking for a download?** No public release is assumed by this repository. When a release is published, its assets and platform support will be described on [GitHub Releases](https://github.com/YerayAlonso/super-ftp/releases). Until then, build from source below.
+> **Looking for a download?** The Windows x64 preview is available on [GitHub Releases](https://github.com/YerayAlonso/super-ftp/releases). It is unsigned and not independently audited; review the release notes and limitations before use. No macOS or Linux installer is provided.
 
 ## Features
 
