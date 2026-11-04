@@ -29,7 +29,7 @@ To regenerate the Windows snapshot, install cargo-about 0.9.3 with its `cli` fea
 node scripts/generate-notices.mjs
 ```
 
-The script invokes cargo-about directly, so its inventory cannot silently come from an older intermediate JSON file. Raw cargo-about JSON can contain local filesystem paths; do not commit it. The generated notice text excludes metadata paths but still requires human review for completeness. A unit test checks lockfile hashes to flag dependency changes; matching hashes do not prove the notices are complete or that installed npm packages match the lockfile. Generate platform-specific inventories and notices before releasing for other targets.
+The script invokes cargo-about directly, so its inventory cannot silently come from an older intermediate JSON file. It rejects missing non-optional npm packages and installed versions that differ from the lockfile; optional packages absent on the generating platform are skipped. Raw cargo-about JSON can contain local filesystem paths; do not commit it. The generated notice text excludes metadata paths but still requires human review for completeness. A unit test checks lockfile hashes to flag dependency changes; matching hashes do not prove the notices are complete or that npm package contents are unmodified. Generate platform-specific inventories and notices before releasing for other targets.
 
 `npm audit --omit=dev` found no known vulnerabilities at the time of this review. `cargo audit` was not installed and RustSec was not checked; license and vulnerability reviews are separate tasks.
 

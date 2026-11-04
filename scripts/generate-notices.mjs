@@ -53,7 +53,15 @@ for (const license of rust.licenses) {
 }
 const missing = [];
 for (const [directory, pkg] of Object.entries(lock.packages)) {
-  if (!directory || !existsSync(directory)) continue;
+  if (!directory) continue;
+  if (!existsSync(directory)) {
+    if (pkg.optional) continue;
+    throw new Error(`Missing non-optional npm package ${directory}. Run npm ci before generating notices.`);
+  }
+  const installed = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+  if (installed.version !== pkg.version) {
+    throw new Error(`Installed version of ${directory} does not match package-lock.json. Run npm ci.`);
+  }
   const notices = readdirSync(directory).filter((name) => /^(licen[cs]e|copying|notice)(\.|$)/i.test(name));
   const label = `${directory.replace(/^node_modules\//, '')} ${pkg.version} (${pkg.license ?? 'unknown license'})`;
   if (!notices.length) { missing.push(label); continue; }
