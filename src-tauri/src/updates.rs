@@ -29,6 +29,18 @@ pub struct UpdateResult {
 fn select_release(releases: &[Release], include_prereleases: bool) -> AppResult<UpdateResult> {
     let current = semver::Version::parse(env!("CARGO_PKG_VERSION"))
         .map_err(|_| AppError::new("UPDATE", "The application version is invalid."))?;
+    Ok(select_release_for_version(
+        releases,
+        include_prereleases,
+        &current,
+    ))
+}
+
+fn select_release_for_version(
+    releases: &[Release],
+    include_prereleases: bool,
+    current: &semver::Version,
+) -> UpdateResult {
     let latest = releases
         .iter()
         .filter_map(|release| {
@@ -48,11 +60,11 @@ fn select_release(releases: &[Release], include_prereleases: bool) -> AppResult<
             Some((version, release))
         })
         .max_by(|a, b| a.0.cmp(&b.0));
-    Ok(UpdateResult {
+    UpdateResult {
         current_version: current.to_string(),
         update_available: latest
             .as_ref()
-            .is_some_and(|(version, _)| version > &current),
+            .is_some_and(|(version, _)| version > current),
         prerelease: latest
             .as_ref()
             .is_some_and(|(version, release)| release.prerelease || !version.pre.is_empty()),
@@ -61,7 +73,7 @@ fn select_release(releases: &[Release], include_prereleases: bool) -> AppResult<
             .and_then(|(_, release)| release.body.as_ref())
             .map(|body| body.chars().take(3000).collect()),
         latest_version: latest.map(|(version, _)| version.to_string()),
-    })
+    }
 }
 
 #[tauri::command]
@@ -142,14 +154,23 @@ mod tests {
                 body: None,
             },
         ];
-        let stable = select_release(&list, false).unwrap();
+        let current = semver::Version::parse("0.1.1").unwrap();
+        let stable = select_release_for_version(&list, false, &current);
         assert_eq!(stable.latest_version.as_deref(), Some("0.1.2"));
         assert!(stable.update_available);
         assert!(!stable.prerelease);
-        let preview = select_release(&list, true).unwrap();
+        let preview = select_release_for_version(&list, true, &current);
         assert_eq!(preview.latest_version.as_deref(), Some("0.3.0-beta.1"));
         assert!(preview.prerelease);
         assert_eq!(preview.release_notes.as_deref(), Some("Preview notes"));
-        assert!(select_release(&[], false).unwrap().latest_version.is_none());
+        assert!(
+            select_release_for_version(&[], false, &current)
+                .latest_version
+                .is_none()
+        );
+        for version in ["0.1.2", "0.1.3"] {
+            let current = semver::Version::parse(version).unwrap();
+            assert!(!select_release_for_version(&list, false, &current).update_available);
+        }
     }
 }
