@@ -79,6 +79,11 @@ try {
   await page.getByRole('region', { name: 'Fitxers locals', exact: true }).getByText('smoke-test.txt', { exact: true }).click({ button: 'right' });
   await expect(page.getByRole('menu', { name: 'Menú contextual' }).getByRole('menuitem', { name: 'Propietats' })).toBeVisible();
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Ajuda', exact: true }).click();
+  const help = page.getByRole('dialog');
+  await help.getByText('Avisos de llicències de tercers (inventari de Windows)').click();
+  await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('SIL OPEN FONT LICENSE');
+  await page.keyboard.press('Escape');
   const localOperations = await page.evaluate(async parent => {
     await window.__TAURI_INTERNALS__.invoke('create_local_directory', { parent, name: 'test-folder' });
     const listing = await window.__TAURI_INTERNALS__.invoke('list_local', { path: parent });
@@ -110,6 +115,7 @@ try {
         invalidPathRejected: true,
         languagePersistence: true,
         contextMenuAndLocalOperations: true,
+        thirdPartyNotices: true,
         rendererErrors: errors.length,
       },
       null,

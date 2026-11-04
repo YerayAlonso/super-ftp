@@ -1,0 +1,2 @@
+# Identifies licenses for review; acceptance here is not a legal conclusion.
+accepted = ["MIT", "Apache-2.0", "BSD-3-Clause", "ISC", "MPL-2.0", "Unicode-3.0", "Zlib", "Unlicense", "0BSD", "CC0-1.0", "MIT-0"]

@@ -1,5 +1,6 @@
 import type { Translations } from './types';
 export const conflicts = {
+  'Third-party license notices (Windows snapshot)': { ca: 'Avisos de llicències de tercers (inventari de Windows)', es: 'Avisos de licencias de terceros (inventario de Windows)', fr: 'Licences tierces (inventaire Windows)', de: 'Drittanbieterlizenzen (Windows-Bestandsaufnahme)', it: 'Licenze di terze parti (inventario Windows)', pt: 'Licenças de terceiros (inventário Windows)', nl: 'Licenties van derden (Windows-inventaris)' },
   'Interface text size': { ca: 'Mida del text de la interfície', es: 'Tamaño del texto de la interfaz', fr: 'Taille du texte de l’interface', de: 'Textgröße der Oberfläche', it: 'Dimensione del testo dell’interfaccia', pt: 'Tamanho do texto da interface', nl: 'Tekstgrootte van de interface' },
   'Decrease text size': { ca: 'Redueix la mida del text', es: 'Reducir el tamaño del texto', fr: 'Réduire la taille du texte', de: 'Text verkleinern', it: 'Riduci la dimensione del testo', pt: 'Reduzir o tamanho do texto', nl: 'Tekst verkleinen' },
   'Increase text size': { ca: 'Augmenta la mida del text', es: 'Aumentar el tamaño del texto', fr: 'Augmenter la taille du texte', de: 'Text vergrößern', it: 'Aumenta la dimensione del testo', pt: 'Aumentar o tamanho do texto', nl: 'Tekst vergroten' },

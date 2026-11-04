@@ -84,6 +84,10 @@
   let picker = $state(false);
   let pickerSearch = $state('');
   let about = $state(false);
+  let thirdPartyNotices = $state('');
+  async function loadThirdPartyNotices() {
+    if (!thirdPartyNotices) thirdPartyNotices = (await import('./lib/third-party-notices.txt?raw')).default;
+  }
   let showHidden = $state(false);
   let localVisible = $state(true);
   let nativeDrop = $state(false);
@@ -1243,6 +1247,12 @@
         'Symbolic links and special files are skipped during recursive transfers. Overwriting requires confirmation. Folders can be deleted with all their contents.',
       )}
     </div>
+    <details class="third-party-notices" ontoggle={(event) => { if (event.currentTarget.open) void loadThirdPartyNotices(); }}>
+      <summary>{i18n.t('Third-party license notices (Windows snapshot)')}</summary>
+      <!-- The scrollable region needs keyboard focus for users without a mouse. -->
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <div class="third-party-notices-text" role="region" aria-label={i18n.t('Third-party license notices (Windows snapshot)')} tabindex="0"><pre>{thirdPartyNotices}</pre></div>
+    </details>
     {#snippet footer()}<span class="muted">{i18n.t('Made to move files. Nothing more.')}</span><button
         class="button primary"
         onclick={() => (about = false)}>{i18n.t('Got it')}<Check size={15} /></button

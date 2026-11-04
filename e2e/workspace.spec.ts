@@ -13,6 +13,18 @@ test('English is the default language', async ({ page }) => {
   await expect(page.getByRole('combobox')).toHaveValue('en');
 });
 
+test('third-party notices are accessible in the help dialog', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Ajuda', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByText('Avisos de llicències de tercers (inventari de Windows)').click();
+  const notices = dialog.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' });
+  await expect(notices).toContainText('SIL OPEN FONT LICENSE');
+  await expect(notices).toContainText('Lucide Icons and Contributors');
+  await expect(notices).toContainText('option-ext 0.2.0');
+  await expect(notices).toContainText('https://crates.io/api/v1/crates/option-ext/0.2.0/download');
+});
+
 test('interface text size scales, persists and resets', async ({ page }) => {
   await page.goto('/');
   const increase = page.getByRole('button', { name: 'Augmenta la mida del text' });

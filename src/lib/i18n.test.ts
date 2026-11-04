@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { parse } from 'svelte/compiler';
 import {
@@ -20,6 +21,15 @@ beforeEach(() => {
 });
 
 describe('offline translation catalogue', () => {
+  it('flags third-party notices when dependency lockfiles change', () => {
+    const notices = readFileSync(resolve('src/lib/third-party-notices.txt'), 'utf8');
+    const inventory = JSON.parse(readFileSync(resolve('third-party/rust-windows-inventory.json'), 'utf8'));
+    for (const [label, file] of [['Cargo.lock', 'src-tauri/Cargo.lock'], ['package-lock.json', 'package-lock.json']]) {
+      const digest = createHash('sha256').update(readFileSync(resolve(file), 'utf8').replace(/\r\n/g, '\n')).digest('hex');
+      expect(notices).toContain(`${label} SHA-256: ${digest}`);
+      if (label === 'Cargo.lock') expect(inventory.cargoLockSha256).toBe(digest);
+    }
+  });
   it('has eight explicit language choices and no duplicate source messages', () => {
     expect(languages.map((language) => language.id)).toEqual([
       'ca',

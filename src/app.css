@@ -474,6 +474,10 @@ kbd {
 .conflict-details span { color: var(--muted); }
 .conflict-details strong { font-weight: 500; overflow-wrap: anywhere; user-select: text; }
 .conflict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.third-party-notices { margin-top: 16px; color: var(--text-secondary); }
+.third-party-notices summary { cursor: pointer; }
+.third-party-notices-text { max-height: 220px; overflow: auto; }
+.third-party-notices pre { white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; font-size: 10px; line-height: 1.5; }
 .connection-dropdown {
   top: 44px;
   left: 9px;
