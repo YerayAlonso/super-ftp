@@ -4,6 +4,9 @@ Notable changes will be recorded here. The repository and its releases are curre
 
 ## Unreleased
 
+- Integrated manual update checks, preview selection and release notes into Preferences without opening a separate dialog.
+- Added scheduled and manual dependency security checks and documented the unresolved RSA timing advisory.
+
 ## 0.1.1 — Preview
 
 - Added a manual Windows installer smoke workflow.

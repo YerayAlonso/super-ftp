@@ -39,7 +39,7 @@ test('update checks are manual and previews are opt-in', async ({ page }) => {
   await chooseLanguage(page, 'en');
   await page.getByRole('button', { name: 'Preferences', exact: true }).click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByRole('button', { name: 'Check for updates' }).click();
+  await expect(dialog.getByRole('region', { name: 'Updates' })).toBeVisible();
   expect(await page.evaluate(() => (window as any).__superftpTest.calls.some((call: any) => call.command === 'check_updates'))).toBe(false);
   await dialog.getByRole('button', { name: 'Check for updates' }).click();
   await expect(dialog.getByRole('status')).toHaveText('No matching public releases were found.');

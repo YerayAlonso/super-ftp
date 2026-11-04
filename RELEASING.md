@@ -6,7 +6,9 @@ This is a manual checklist, not an automated publishing workflow. The GitHub rep
 
 - [ ] Confirm the maintainers and permission to publish all code, assets and the MIT copyright notice.
 - [ ] Review every file to be committed, including tests, screenshots and history, for credentials, private keys, real server details, personal data and third-party material. `.gitignore` is not a secret scanner. Never rely solely on the limited checks performed during preparation.
-- [ ] Enable private vulnerability reporting in GitHub Security settings or establish another private reporting channel, and update [SECURITY.md](SECURITY.md) with an actionable contact before announcing the project.
+- [ ] Review repository metadata, issues, pull requests, Actions logs and artifacts, tags, and existing release notes and assets: making a repository public may expose existing content as well as source code. Decide explicitly which existing releases should be public.
+- [ ] Establish a private reporting channel before announcing the project. GitHub private vulnerability reporting is available for public repositories: enable and verify it as part of the public-visibility transition, or establish another private contact first. Update [SECURITY.md](SECURITY.md) with the verified reporting instructions.
+- [ ] Review and explicitly accept or mitigate the unresolved RSA advisory described in [SECURITY.md](SECURITY.md#rsa-timing-advisory); do not describe the signing path as confirmed safe.
 - [ ] Choose moderation and maintenance contacts and add a code of conduct if desired. Enable repository security features and branch protection as appropriate.
 - [x] Initialize the local Git repository, configure the remote and push the initial commit.
 - [x] Run the desktop CI workflow on the GitHub repository; Windows, macOS, Linux and UI jobs have passed. Continue checking CI for subsequent changes.

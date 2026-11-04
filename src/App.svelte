@@ -86,7 +86,6 @@
   let pickerSearch = $state('');
   let about = $state(false);
   let preferencesOpen = $state(false);
-  let updatesOpen = $state(false);
   let licensesOpen = $state(false);
   let includePrereleases = $state(false);
   let checkingUpdates = $state(false);
@@ -1283,15 +1282,8 @@
         <button type="button" aria-label={i18n.t('Increase text size')} title={i18n.t('Increase text size')} disabled={fontSize === fontSizes[fontSizes.length - 1]} onclick={() => adjustFontSize(1)}>A+</button>
       </div>
     </div>
-    <div class="preferences-section">
-      <strong>{i18n.t('Updates')}</strong>
-      <button class="button secondary" onclick={() => { preferencesOpen = false; updatesOpen = true; }}>{i18n.t('Check for updates')}</button>
-    </div>
-    {#snippet footer()}<span></span><button class="button primary" onclick={() => (preferencesOpen = false)}>{i18n.t('Close')}</button>{/snippet}
-  </Modal>{/if}
-
-{#if updatesOpen}<Modal title={i18n.t('Updates')} small onClose={() => (updatesOpen = false)}>
     <section class="update-check" aria-label={i18n.t('Updates')}>
+      <strong class="update-heading">{i18n.t('Updates')}</strong>
       <p>{i18n.t('Checking contacts GitHub without credentials. Nothing is downloaded or installed.')}</p>
       <label><input type="checkbox" bind:checked={includePrereleases} disabled={checkingUpdates} onchange={() => { updateResult = null; updateError = ''; }} /> {i18n.t('Include preview releases')}</label>
       <div class="update-actions">
@@ -1304,7 +1296,7 @@
       {/if}
       {#if updateError}<p class="form-error" role="alert">{i18n.text(updateError)}</p>{/if}
     </section>
-    {#snippet footer()}<span></span><button class="button primary" onclick={() => (updatesOpen = false)}>{i18n.t('Close')}</button>{/snippet}
+    {#snippet footer()}<span></span><button class="button primary" onclick={() => (preferencesOpen = false)}>{i18n.t('Close')}</button>{/snippet}
   </Modal>{/if}
 
 {#if licensesOpen}<Modal title={i18n.t('Third-party licenses')} onClose={() => (licensesOpen = false)}>
@@ -1335,6 +1327,6 @@
     </div>{/each}
 </div>
 
-{#if waitingConflict && !editor && !picker && !hostPrompt && !loginPrompt && !confirmAction && !textAction && !properties && !about && !preferencesOpen && !updatesOpen && !licensesOpen}
+{#if waitingConflict && !editor && !picker && !hostPrompt && !loginPrompt && !confirmAction && !textAction && !properties && !about && !preferencesOpen && !licensesOpen}
   {#key waitingConflict.conflict?.id}<ConflictDialog transfer={waitingConflict} />{/key}
 {/if}

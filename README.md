@@ -103,6 +103,8 @@ Secrets use **Windows Credential Manager**, **macOS Keychain** or Linux **Secret
 
 See [SECURITY.md](SECURITY.md) for the security model and limitations.
 
+**RSA keys:** a dependency used for RSA key-file authentication has an unresolved timing advisory. Its applicability to this application's SSH signing path is not established. Prefer Ed25519 for new connections where supported; see [SECURITY.md](SECURITY.md#rsa-timing-advisory) for details.
+
 ## Preview limitations
 
 - SFTP only: no FTP, FTPS, SCP, remote terminal or remote command execution.

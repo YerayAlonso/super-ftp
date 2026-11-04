@@ -90,7 +90,6 @@ try {
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Preferències', exact: true }).click();
   help = page.getByRole('dialog');
-  await help.getByRole('button', { name: 'Comprova si hi ha actualitzacions', exact: true }).click();
   const updates = help.getByRole('region', { name: 'Actualitzacions' });
   await updates.getByRole('button', { name: 'Comprova si hi ha actualitzacions' }).click();
   await expect(updates.locator('[role="status"], [role="alert"]')).toBeVisible({ timeout: 20000 });
