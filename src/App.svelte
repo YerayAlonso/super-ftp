@@ -87,8 +87,15 @@
   let about = $state(false);
   let preferencesOpen = $state(false);
   let licensesOpen = $state(false);
-  let includePrereleases = $state(false);
+  function initialIncludePrereleases() {
+    try { return localStorage.getItem('superftp-include-previews') === 'true'; }
+    catch { return false; }
+  }
+  let includePrereleases = $state(initialIncludePrereleases());
+  let automaticUpdateNotice = $state<string | null>(null);
   let checkingUpdates = $state(false);
+  let signedUpdateVersion = $state<string | null>(null);
+  let installingUpdate = $state(false);
   let updateError = $state<DisplayMessage>('');
   let updateResult = $state<Awaited<ReturnType<typeof api.checkUpdates>> | null>(null);
   async function checkUpdates() {
@@ -96,9 +103,20 @@
     checkingUpdates = true;
     updateError = '';
     updateResult = null;
-    try { updateResult = await api.checkUpdates(includePrereleases); }
+    try {
+      updateResult = await api.checkUpdates(includePrereleases);
+      signedUpdateVersion = await api.checkSignedUpdate(includePrereleases).catch(() => null);
+    }
     catch (cause) { updateError = errorMessage(cause); }
     finally { checkingUpdates = false; }
+  }
+  async function installSignedUpdate() {
+    if (!signedUpdateVersion || installingUpdate) return;
+    installingUpdate = true;
+    updateError = '';
+    try { await api.installSignedUpdate(includePrereleases, signedUpdateVersion); }
+    catch (cause) { updateError = errorMessage(cause); preferencesOpen = true; }
+    finally { installingUpdate = false; }
   }
   async function openReleasesPage() {
     try { await api.openReleasesPage(); }
@@ -188,6 +206,11 @@
 
   $effect(() => {
     document.documentElement.lang = i18n.language;
+  });
+
+  $effect(() => {
+    try { localStorage.setItem('superftp-include-previews', String(includePrereleases)); }
+    catch { /* Optional preference storage. */ }
   });
 
   $effect(() => {
@@ -625,6 +648,15 @@
         noticeTimers.forEach(clearTimeout);
       };
     let disposed = false;
+    const startupPreviewSetting = includePrereleases;
+    // Background checks are read-only; failure must never interrupt startup.
+    void api.checkUpdates(startupPreviewSetting).then((result) => {
+      if (!disposed && includePrereleases === startupPreviewSetting && result.updateAvailable && result.latestVersion)
+        automaticUpdateNotice = result.latestVersion;
+    }).catch(() => {});
+    void api.checkSignedUpdate(startupPreviewSetting).then((version) => {
+      if (!disposed && includePrereleases === startupPreviewSetting) signedUpdateVersion = version;
+    }).catch(() => {});
     const cleanup: (() => void)[] = [];
     async function bootstrap() {
       // Subscribe before querying the snapshot so progress events aren't lost.
@@ -1285,9 +1317,10 @@
     <section class="update-check" aria-label={i18n.t('Updates')}>
       <strong class="update-heading">{i18n.t('Updates')}</strong>
       <p>{i18n.t('Checking contacts GitHub without credentials. Nothing is downloaded or installed.')}</p>
-      <label><input type="checkbox" bind:checked={includePrereleases} disabled={checkingUpdates} onchange={() => { updateResult = null; updateError = ''; }} /> {i18n.t('Include preview releases')}</label>
+      <label><input type="checkbox" bind:checked={includePrereleases} disabled={checkingUpdates || installingUpdate} onchange={() => { updateResult = null; signedUpdateVersion = null; automaticUpdateNotice = null; updateError = ''; }} /> {i18n.t('Include preview releases')}</label>
       <div class="update-actions">
-        <button class="button secondary" disabled={checkingUpdates} onclick={checkUpdates}>{i18n.t('Check for updates')}</button>
+        <button class="button secondary" disabled={checkingUpdates || installingUpdate} onclick={checkUpdates}>{i18n.t('Check for updates')}</button>
+        {#if signedUpdateVersion}<button class="button primary" disabled={installingUpdate} onclick={installSignedUpdate}>{i18n.t('Install update')}</button>{/if}
         <button class="button ghost" onclick={openReleasesPage}>{i18n.t('Open GitHub releases')}</button>
       </div>
       {#if updateResult}
@@ -1310,6 +1343,15 @@
   </Modal>{/if}
 
 <div class="toast-stack" aria-live="polite">
+  {#if automaticUpdateNotice}
+    <div class="toast">
+      <CircleHelp size={18} />
+      <span>{i18n.t('A newer version is available: {version}', { version: automaticUpdateNotice })}</span>
+      {#if signedUpdateVersion === automaticUpdateNotice}<button class="button primary" disabled={installingUpdate} onclick={installSignedUpdate}>{i18n.t('Install update')}</button>{/if}
+      <button class="button ghost" onclick={() => { automaticUpdateNotice = null; preferencesOpen = true; }}>{i18n.t('Updates')}</button>
+      <button class="icon-button tiny" aria-label={i18n.t('Dismiss notification')} onclick={() => automaticUpdateNotice = null}><X size={14} /></button>
+    </div>
+  {/if}
   {#each notices as notice (notice.id)}<div
       class="toast"
       class:error-toast={notice.kind === 'error'}

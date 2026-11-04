@@ -1,7 +1,7 @@
 {
   "target": "x86_64-pc-windows-msvc",
   "tool": "cargo-about 0.9.3",
-  "cargoLockSha256": "f200e51f33b39dcdcad4cdb4f973d60a96e08551f6ae6b6f2f65cac72d145208",
+  "cargoLockSha256": "6a82725095400e885c818c2bfa7935f7806c858d985ab85df7766b0b2a2d5629",
   "scope": "resolved dependency graph; includes build and development dependencies, not a binary bill of materials",
   "packages": [
     {
@@ -1001,6 +1001,12 @@
       "repository": "https://github.com/hyperium/mime"
     },
     {
+      "name": "minisign-verify",
+      "version": "0.3.0",
+      "license": "MIT",
+      "repository": "https://github.com/jedisct1/rust-minisign-verify"
+    },
+    {
       "name": "miniz_oxide",
       "version": "0.8.9",
       "license": "MIT OR Zlib OR Apache-2.0",
@@ -1751,6 +1757,12 @@
       "repository": "https://github.com/tauri-apps/plugins-workspace"
     },
     {
+      "name": "tauri-plugin-updater",
+      "version": "2.14.1",
+      "license": "Apache-2.0 OR MIT",
+      "repository": "https://github.com/tauri-apps/plugins-workspace"
+    },
+    {
       "name": "tauri-runtime",
       "version": "2.12.2",
       "license": "Apache-2.0 OR MIT",
@@ -1911,6 +1923,12 @@
       "version": "0.2.5",
       "license": "MIT",
       "repository": "https://github.com/seanmonstar/try-lock"
+    },
+    {
+      "name": "typed-path",
+      "version": "0.13.0",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/chipsenkbeil/typed-path"
     },
     {
       "name": "typeid",
@@ -2105,6 +2123,12 @@
       "repository": "https://github.com/microsoft/windows-rs"
     },
     {
+      "name": "windows-registry",
+      "version": "0.6.1",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/microsoft/windows-rs"
+    },
+    {
       "name": "windows-result",
       "version": "0.4.1",
       "license": "MIT OR Apache-2.0",
@@ -2211,6 +2235,12 @@
       "version": "0.11.7",
       "license": "Unicode-3.0",
       "repository": "https://github.com/unicode-org/icu4x"
+    },
+    {
+      "name": "zip",
+      "version": "9.3.0",
+      "license": "MIT",
+      "repository": "https://github.com/zip-rs/zip2"
     },
     {
       "name": "zmij",

@@ -17,6 +17,7 @@ use tauri::Manager;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let store = storage::Store::load(app.path().app_config_dir()?)?;
             app.manage(state::AppState::new(store));
@@ -44,6 +45,8 @@ pub fn run() {
             commands::clear_finished_transfers,
             updates::check_updates,
             updates::open_releases_page,
+            updates::check_signed_update,
+            updates::install_signed_update,
         ])
         .run(tauri::generate_context!())
         .expect("No s’ha pogut iniciar Super FTP");

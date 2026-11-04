@@ -1,0 +1,83 @@
+name: Signed Windows upgrade test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [test/signed-updater]
+
+permissions:
+  contents: read
+
+jobs:
+  signed-upgrade:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - name: Build test installer
+        run: npm run desktop:build -- --bundles nsis
+      - name: Prepare disposable signing key and signed fixture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fixture = Join-Path $env:RUNNER_TEMP 'superftp-signed-update-fixture'
+          New-Item -ItemType Directory -Path $fixture | Out-Null
+          $key = Join-Path $fixture 'ci-only.key'
+          $installer = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
+          Copy-Item -LiteralPath 'src-tauri/target/release/bundle/nsis/Super FTP_0.1.3_x64-setup.exe' -Destination $installer
+          & node_modules/.bin/tauri.cmd signer generate --password 'temporary-ci-key' --write-keys $key *> $null
+          if ($LASTEXITCODE -ne 0) { throw 'Could not generate disposable signing key' }
+          & node_modules/.bin/tauri.cmd signer sign --private-key-path $key --password 'temporary-ci-key' --app-version 0.1.3 $installer *> $null
+          if ($LASTEXITCODE -ne 0) { throw 'Could not sign test installer' }
+          & 'C:\Program Files\7-Zip\7z.exe' e $installer "-o$fixture\extracted" 'super-ftp.exe'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not extract test installer' }
+      - name: Install previous public preview
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = Join-Path $env:RUNNER_TEMP 'superftp-previous'
+          $install = Join-Path $env:RUNNER_TEMP 'superftp-signed-upgrade-install'
+          $registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Super FTP'
+          if (Test-Path $registration) { throw 'Unexpected pre-existing installation' }
+          New-Item -ItemType Directory -Path $dir | Out-Null
+          gh release download v0.1.2 --repo '${{ github.repository }}' --dir $dir --pattern 'Super.FTP_0.1.2_x64-setup.exe' --pattern 'SHA256SUMS.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Previous preview download failed' }
+          $parts = (Get-Content -LiteralPath (Join-Path $dir 'SHA256SUMS.txt')) -split '  ', 2
+          $old = Join-Path $dir 'Super.FTP_0.1.2_x64-setup.exe'
+          if ($parts.Count -ne 2 -or $parts[1] -ne 'Super.FTP_0.1.2_x64-setup.exe' -or (Get-FileHash -Algorithm SHA256 -LiteralPath $old).Hash -ne $parts[0]) { throw 'Previous installer checksum mismatch' }
+          $process = Start-Process -FilePath $old -ArgumentList @('/S', "/D=$install") -Wait -PassThru
+          if ($process.ExitCode -ne 0 -or (Get-ItemProperty -LiteralPath $registration).DisplayVersion -ne '0.1.2') { throw 'Previous installer failed' }
+      - name: Run signed download and installer in isolated runner
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fixture = Join-Path $env:RUNNER_TEMP 'superftp-signed-update-fixture'
+          $install = Join-Path $env:RUNNER_TEMP 'superftp-signed-upgrade-install'
+          $registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Super FTP'
+          $env:SUPERFTP_ALLOW_INSTALL_TEST = 'isolated-runner'
+          $env:SUPERFTP_TEST_INSTALL_DIR = $install
+          $env:SUPERFTP_TEST_INSTALLER = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
+          $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'ci-only.key.pub'
+          cargo test --manifest-path src-tauri/Cargo.toml --lib --locked updates::tests::isolated_windows_signed_upgrade -- --ignored --exact --nocapture
+          if ($LASTEXITCODE -ne 0) { throw 'Signed updater failed' }
+          $updated = $false
+          for ($i = 0; $i -lt 60; $i++) {
+            $version = (Get-ItemProperty -LiteralPath $registration -ErrorAction SilentlyContinue).DisplayVersion
+            if ($version -eq '0.1.3') { $updated = $true; break }
+            Start-Sleep -Seconds 1
+          }
+          if (-not $updated) { throw 'Signed installer did not update to 0.1.3' }
+          $expected = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $fixture 'extracted\super-ftp.exe')).Hash
+          $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $install 'super-ftp.exe')).Hash
+          if ($expected -ne $actual) { throw 'Installed executable differs from the signed installer' }
+          $uninstaller = Join-Path $install 'uninstall.exe'
+          $process = Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait -PassThru
+          if ($process.ExitCode -ne 0 -or (Test-Path $registration)) { throw 'Uninstall failed' }
