@@ -60,7 +60,18 @@ async fn signed_update(
         .timeout(Duration::from_secs(15))
         .build()
         .map_err(|_| fail())?;
-    let update = updater.check().await.map_err(|_| fail())?;
+    // The updater plugin's network parser has no response size limit. Fetch
+    // the fixed manifest ourselves without redirects and bound it before parsing.
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(15))
+        .redirect(reqwest::redirect::Policy::none())
+        .user_agent(concat!("super-ftp/", env!("CARGO_PKG_VERSION")))
+        .build()
+        .map_err(|_| fail())?;
+    let Some(manifest) = fetch_manifest(&client, endpoint).await? else {
+        return Ok(None);
+    };
+    let update = updater.restore_update(manifest).map_err(|_| fail())?;
     if let Some(update) = &update {
         // Metadata is not authenticated until the artifact signature is verified.
         // Avoid allowing a modified feed to trigger requests to arbitrary hosts.
@@ -69,6 +80,39 @@ async fn signed_update(
         }
     }
     Ok(update)
+}
+
+async fn fetch_manifest(
+    client: &reqwest::Client,
+    endpoint: &str,
+) -> AppResult<Option<serde_json::Value>> {
+    let fail = || {
+        AppError::new(
+            "UPDATE",
+            "Could not check GitHub releases. The repository may be private, unavailable, or rate-limited.",
+        )
+    };
+    let mut response = client.get(endpoint).send().await.map_err(|_| fail())?;
+    if response.status() == reqwest::StatusCode::NOT_FOUND
+        || response.status() == reqwest::StatusCode::NO_CONTENT
+    {
+        return Ok(None);
+    }
+    if !response.status().is_success()
+        || response
+            .content_length()
+            .is_some_and(|length| length > MAX_RESPONSE as u64)
+    {
+        return Err(fail());
+    }
+    let mut bytes = Vec::new();
+    while let Some(chunk) = response.chunk().await.map_err(|_| fail())? {
+        if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
+            return Err(fail());
+        }
+        bytes.extend_from_slice(&chunk);
+    }
+    Ok(Some(serde_json::from_slice(&bytes).map_err(|_| fail())?))
 }
 
 #[tauri::command]
@@ -371,6 +415,58 @@ mod tests {
                     .is_ok(),
                 expected
             );
+            server.join().unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn manifest_fetch_handles_missing_invalid_and_oversized_responses() {
+        use std::io::{Read, Write};
+        use std::net::TcpListener;
+        let client = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .build()
+            .unwrap();
+        let cases = [
+            (
+                "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                0,
+            ),
+            (
+                "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}",
+                1,
+            ),
+            (
+                "HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\nbad",
+                2,
+            ),
+            (
+                "HTTP/1.1 200 OK\r\nContent-Length: 1048577\r\nConnection: close\r\n\r\n",
+                2,
+            ),
+            (
+                "HTTP/1.1 302 Found\r\nLocation: https://example.invalid/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                2,
+            ),
+        ];
+        for (response, expected) in cases {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let address = listener.local_addr().unwrap();
+            let server = std::thread::spawn(move || {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(5)))
+                    .unwrap();
+                let mut request = [0u8; 1024];
+                let _ = stream.read(&mut request).unwrap();
+                stream.write_all(response.as_bytes()).unwrap();
+            });
+            let result = fetch_manifest(&client, &format!("http://{address}/manifest")).await;
+            match expected {
+                0 => assert!(matches!(result, Ok(None))),
+                1 => assert!(matches!(result, Ok(Some(_)))),
+                _ => assert!(result.is_err()),
+            }
             server.join().unwrap();
         }
     }
