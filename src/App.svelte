@@ -1320,7 +1320,7 @@
       <label><input type="checkbox" bind:checked={includePrereleases} disabled={checkingUpdates || installingUpdate} onchange={() => { updateResult = null; signedUpdateVersion = null; automaticUpdateNotice = null; updateError = ''; }} /> {i18n.t('Include preview releases')}</label>
       <div class="update-actions">
         <button class="button secondary" disabled={checkingUpdates || installingUpdate} onclick={checkUpdates}>{i18n.t('Check for updates')}</button>
-        {#if signedUpdateVersion}<button class="button primary" disabled={installingUpdate} onclick={installSignedUpdate}>{i18n.t('Install update')}</button>{/if}
+        {#if signedUpdateVersion}<button class="button primary" disabled={installingUpdate} onclick={installSignedUpdate}>{i18n.t(installingUpdate ? 'Installing update…' : 'Install update')}</button>{/if}
         <button class="button ghost" onclick={openReleasesPage}>{i18n.t('Open GitHub releases')}</button>
       </div>
       {#if updateResult}
@@ -1347,7 +1347,7 @@
     <div class="toast">
       <CircleHelp size={18} />
       <span>{i18n.t('A newer version is available: {version}', { version: automaticUpdateNotice })}</span>
-      {#if signedUpdateVersion === automaticUpdateNotice}<button class="button primary" disabled={installingUpdate} onclick={installSignedUpdate}>{i18n.t('Install update')}</button>{/if}
+      {#if signedUpdateVersion === automaticUpdateNotice}<button class="button primary" disabled={installingUpdate} onclick={installSignedUpdate}>{i18n.t(installingUpdate ? 'Installing update…' : 'Install update')}</button>{/if}
       <button class="button ghost" onclick={() => { automaticUpdateNotice = null; preferencesOpen = true; }}>{i18n.t('Updates')}</button>
       <button class="icon-button tiny" aria-label={i18n.t('Dismiss notification')} onclick={() => automaticUpdateNotice = null}><X size={14} /></button>
     </div>

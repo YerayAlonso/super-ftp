@@ -74,10 +74,16 @@ test('startup announces a newer preview when previews were selected', async ({ p
   await page.goto('/');
   const toast = page.locator('.toast').filter({ hasText: 'A newer version is available: 0.2.0' });
   await expect(toast).toBeVisible();
+  await page.evaluate(() => { (window as any).__superftpTest.holdInstall = true; });
   await toast.getByRole('button', { name: 'Install update' }).click();
   await expect.poll(() => page.evaluate(() => (window as any).__superftpTest.calls.some((call: any) => call.command === 'install_signed_update' && call.args.expectedVersion === '0.2.0' && call.args.includePrereleases))).toBe(true);
+  await expect(toast.getByRole('button', { name: 'Installing update…' })).toBeDisabled();
   await toast.getByRole('button', { name: 'Updates' }).click();
-  await expect(page.getByRole('dialog', { name: 'Preferences' }).getByLabel('Include preview releases')).toBeChecked();
+  const preferences = page.getByRole('dialog', { name: 'Preferences' });
+  await expect(preferences.getByLabel('Include preview releases')).toBeChecked();
+  await expect(preferences.getByRole('button', { name: 'Installing update…' })).toBeDisabled();
+  await page.evaluate(() => (window as any).__superftpTest.finishInstall());
+  await expect(preferences.getByRole('button', { name: 'Install update' })).toBeEnabled();
 });
 
 test('interface text size scales, persists and resets', async ({ page }) => {
@@ -345,7 +351,10 @@ async function mockDesktop(page: Page, challenge = false) {
             ? { currentVersion: '0.1.0', latestVersion: '0.2.0', updateAvailable: true, prerelease: true, releaseNotes: 'Preview test notes' }
             : { currentVersion: '0.1.0', latestVersion: null, updateAvailable: false, prerelease: false, releaseNotes: null };
           if (command === 'check_signed_update') return args.includePrereleases ? '0.2.0' : null;
-          if (command === 'install_signed_update') return;
+          if (command === 'install_signed_update') {
+            if (app.__superftpTest.holdInstall) await new Promise<void>(resolve => { app.__superftpTest.finishInstall = resolve; });
+            return;
+          }
           if (command === 'open_releases_page') return;
           if (command === 'plugin:dialog|open') return 'C:\\Test';
           if (
