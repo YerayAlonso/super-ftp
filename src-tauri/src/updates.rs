@@ -663,8 +663,13 @@ mod tests {
             .unwrap()
             .build()
             .unwrap();
+        let download_url = std::env::var("SUPERFTP_SIGNED_FIXTURE_URL").unwrap_or_else(|_| {
+            format!(
+                "https://github.com/YerayAlonso/super-ftp/releases/download/v{version}/{filename}"
+            )
+        });
         let manifest = serde_json::json!({ "version": version, "platforms": { "test-target": {
-            "url": format!("https://github.com/YerayAlonso/super-ftp/releases/download/v{version}/{filename}"),
+            "url": download_url,
             "signature": signature.trim()
         }}});
         let update = updater

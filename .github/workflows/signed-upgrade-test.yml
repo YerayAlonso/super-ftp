@@ -2,6 +2,11 @@ name: Signed Windows upgrade test
 
 on:
   workflow_dispatch:
+    inputs:
+      use_project_candidate:
+        description: Test the public project-key-signed 0.1.3 candidate instead of a disposable-key build
+        type: boolean
+        default: false
   push:
     branches: [test/signed-updater]
 
@@ -21,8 +26,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: npm ci
       - name: Build test installer
+        if: ${{ inputs.use_project_candidate != true }}
         run: npm run desktop:build -- --bundles nsis
       - name: Prepare disposable signing key and signed fixture
+        if: ${{ inputs.use_project_candidate != true }}
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -37,6 +44,25 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Could not sign test installer' }
           & 'C:\Program Files\7-Zip\7z.exe' e $installer "-o$fixture\extracted" 'super-ftp.exe'
           if ($LASTEXITCODE -ne 0) { throw 'Could not extract test installer' }
+      - name: Download exact project-signed candidate
+        if: ${{ inputs.use_project_candidate == true }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fixture = Join-Path $env:RUNNER_TEMP 'superftp-signed-update-fixture'
+          New-Item -ItemType Directory -Path $fixture | Out-Null
+          gh release download v0.1.3-test.1 --repo '${{ github.repository }}' --dir $fixture --pattern 'Super.FTP_0.1.3_x64-setup.exe' --pattern 'Super.FTP_0.1.3_x64-setup.exe.sig'
+          if ($LASTEXITCODE -ne 0) { throw 'Project-signed test candidate download failed' }
+          $installer = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
+          $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $installer).Hash.ToLowerInvariant()
+          if ($actual -ne 'f91147190098f35413a973905a249be77c7471864af0bd7c752ca67abe1e7b2c') { throw 'Candidate hash does not match the locally verified installer' }
+          $config = Get-Content -Raw 'src-tauri/tauri.conf.json' | ConvertFrom-Json
+          $publicKeyPath = Join-Path $fixture 'project.pub'
+          Set-Content -LiteralPath $publicKeyPath -Value $config.plugins.updater.pubkey -NoNewline
+          & 'C:\Program Files\7-Zip\7z.exe' e $installer "-o$fixture\extracted" 'super-ftp.exe' | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Could not extract candidate executable' }
       - name: Install previous public preview
         shell: pwsh
         env:
@@ -65,7 +91,11 @@ jobs:
           $env:SUPERFTP_ALLOW_INSTALL_TEST = 'isolated-runner'
           $env:SUPERFTP_TEST_INSTALL_DIR = $install
           $env:SUPERFTP_TEST_INSTALLER = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
-          $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'ci-only.key.pub'
+          if ('${{ inputs.use_project_candidate }}' -eq 'true') {
+            $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'project.pub'
+          } else {
+            $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'ci-only.key.pub'
+          }
           cargo test --manifest-path src-tauri/Cargo.toml --lib --locked updates::tests::isolated_windows_signed_upgrade -- --ignored --exact --nocapture
           if ($LASTEXITCODE -ne 0) { throw 'Signed updater failed' }
           $updated = $false
