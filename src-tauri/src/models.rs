@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+fn default_connect_timeout_seconds() -> u64 {
+    20
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum AuthMethod {
@@ -16,6 +20,8 @@ pub struct Connection {
     pub name: String,
     pub host: String,
     pub port: u16,
+    #[serde(default = "default_connect_timeout_seconds")]
+    pub connect_timeout_seconds: u64,
     pub username: String,
     pub auth_method: AuthMethod,
     pub key_path: Option<String>,

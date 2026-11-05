@@ -7,6 +7,7 @@
     title,
     eyebrow = 'SUPER FTP',
     small = false,
+    wide = false,
     busy = false,
     onClose,
     children,
@@ -15,6 +16,7 @@
     title: string;
     eyebrow?: string;
     small?: boolean;
+    wide?: boolean;
     busy?: boolean;
     onClose: () => void;
     children: Snippet;
@@ -30,6 +32,7 @@
 <dialog
   class="modal"
   class:small-modal={small}
+  class:wide-modal={wide}
   bind:this={dialog}
   aria-labelledby="modal-title"
   onclose={onClose}

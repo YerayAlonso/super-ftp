@@ -1,6 +1,71 @@
 import type { Translations } from './types';
 
 export const errors = {
+  'Connection timeout must be between 5 and 120 seconds.': {
+    es: 'El tiempo de espera debe estar entre 5 y 120 segundos.',
+    ca: 'El temps d’espera ha de ser d’entre 5 i 120 segons.',
+    fr: 'Le délai doit être compris entre 5 et 120 secondes.',
+    de: 'Das Zeitlimit muss zwischen 5 und 120 Sekunden liegen.',
+    it: 'Il tempo limite deve essere tra 5 e 120 secondi.',
+    pt: 'O tempo limite deve estar entre 5 e 120 segundos.',
+    nl: 'De time-out moet tussen 5 en 120 seconden liggen.',
+  },
+  'DNS lookup timed out after {seconds} seconds. Check DNS or increase the connection timeout.': {
+    es: 'La resolución DNS ha agotado el límite de {seconds} segundos. Revisa el DNS o aumenta el tiempo de espera.',
+    ca: 'La resolució DNS ha esgotat el límit de {seconds} segons. Revisa el DNS o augmenta el temps d’espera.',
+    fr: 'La résolution DNS a dépassé {seconds} secondes. Vérifiez le DNS ou augmentez le délai.',
+    de: 'DNS-Auflösung nach {seconds} Sekunden abgebrochen. DNS prüfen oder Zeitlimit erhöhen.',
+    it: 'Risoluzione DNS scaduta dopo {seconds} secondi. Controlla il DNS o aumenta il tempo limite.',
+    pt: 'A resolução DNS excedeu {seconds} segundos. Verifica o DNS ou aumenta o tempo limite.',
+    nl: 'DNS-resolutie verlopen na {seconds} seconden. Controleer DNS of verhoog de time-out.',
+  },
+  'TCP connection timed out after {seconds} seconds. Check the host, port, network or firewall, or increase the connection timeout.':
+    {
+      es: 'La conexión TCP ha agotado el límite de {seconds} segundos. Revisa el servidor, puerto, red o cortafuegos, o aumenta el tiempo de espera.',
+      ca: 'La connexió TCP ha esgotat el límit de {seconds} segons. Revisa el servidor, port, xarxa o tallafoc, o augmenta el temps d’espera.',
+      fr: 'La connexion TCP a dépassé {seconds} secondes. Vérifiez le serveur, le port, le réseau ou le pare-feu, ou augmentez le délai.',
+      de: 'TCP-Verbindung nach {seconds} Sekunden abgebrochen. Host, Port, Netzwerk oder Firewall prüfen oder Zeitlimit erhöhen.',
+      it: 'Connessione TCP scaduta dopo {seconds} secondi. Controlla host, porta, rete o firewall, o aumenta il tempo limite.',
+      pt: 'A ligação TCP excedeu {seconds} segundos. Verifica o servidor, porta, rede ou firewall, ou aumenta o tempo limite.',
+      nl: 'TCP-verbinding verlopen na {seconds} seconden. Controleer host, poort, netwerk of firewall, of verhoog de time-out.',
+    },
+  'SSH negotiation timed out after {seconds} seconds. The TCP connection succeeded; check the SSH service or increase the connection timeout.':
+    {
+      es: 'La negociación SSH ha agotado el límite de {seconds} segundos. La conexión TCP se ha establecido; revisa el servicio SSH o aumenta el tiempo de espera.',
+      ca: 'La negociació SSH ha esgotat el límit de {seconds} segons. La connexió TCP s’ha establert; revisa el servei SSH o augmenta el temps d’espera.',
+      fr: 'La négociation SSH a dépassé {seconds} secondes. La connexion TCP a réussi ; vérifiez le service SSH ou augmentez le délai.',
+      de: 'SSH-Aushandlung nach {seconds} Sekunden abgebrochen. TCP-Verbindung erfolgreich; SSH-Dienst prüfen oder Zeitlimit erhöhen.',
+      it: 'Negoziazione SSH scaduta dopo {seconds} secondi. Connessione TCP riuscita; controlla il servizio SSH o aumenta il tempo limite.',
+      pt: 'A negociação SSH excedeu {seconds} segundos. A ligação TCP foi estabelecida; verifica o serviço SSH ou aumenta o tempo limite.',
+      nl: 'SSH-onderhandeling verlopen na {seconds} seconden. TCP-verbinding geslaagd; controleer de SSH-service of verhoog de time-out.',
+    },
+  'DNS lookup failed: {detail}': {
+    es: 'Ha fallado la resolución DNS: {detail}',
+    ca: 'Ha fallat la resolució DNS: {detail}',
+    fr: 'Échec de résolution DNS : {detail}',
+    de: 'DNS-Auflösung fehlgeschlagen: {detail}',
+    it: 'Risoluzione DNS non riuscita: {detail}',
+    pt: 'Falha na resolução DNS: {detail}',
+    nl: 'DNS-resolutie mislukt: {detail}',
+  },
+  'TCP connection failed: {detail}': {
+    es: 'Ha fallado la conexión TCP: {detail}',
+    ca: 'Ha fallat la connexió TCP: {detail}',
+    fr: 'Échec de connexion TCP : {detail}',
+    de: 'TCP-Verbindung fehlgeschlagen: {detail}',
+    it: 'Connessione TCP non riuscita: {detail}',
+    pt: 'Falha na ligação TCP: {detail}',
+    nl: 'TCP-verbinding mislukt: {detail}',
+  },
+  'SSH negotiation failed: {detail}': {
+    es: 'Ha fallado la negociación SSH: {detail}',
+    ca: 'Ha fallat la negociació SSH: {detail}',
+    fr: 'Échec de négociation SSH : {detail}',
+    de: 'SSH-Aushandlung fehlgeschlagen: {detail}',
+    it: 'Negoziazione SSH non riuscita: {detail}',
+    pt: 'Falha na negociação SSH: {detail}',
+    nl: 'SSH-onderhandeling mislukt: {detail}',
+  },
   'An unexpected error occurred.': {
     es: 'Se ha producido un error inesperado.',
     ca: 'S’ha produït un error inesperat.',
@@ -317,16 +382,15 @@ export const errors = {
     pt: 'Não é possível ligar ao agente SSH. Verifica SSH_AUTH_SOCK.',
     nl: 'Kan geen verbinding maken met de SSH-agent. Controleer SSH_AUTH_SOCK.',
   },
-  'Could not connect to the Windows OpenSSH agent. Make sure the ssh-agent service is running.':
-    {
-      es: 'No se puede conectar al agente OpenSSH de Windows. Comprueba que el servicio ssh-agent esté activo.',
-      ca: 'No es pot connectar a l’agent OpenSSH de Windows. Comprova que el servei ssh-agent estigui actiu.',
-      fr: 'Impossible de joindre l’agent OpenSSH de Windows. Vérifiez que le service ssh-agent est actif.',
-      de: 'Verbindung zum Windows-OpenSSH-Agenten fehlgeschlagen. Prüfe, ob der Dienst ssh-agent läuft.',
-      it: 'Impossibile connettersi all’agent OpenSSH di Windows. Verifica che il servizio ssh-agent sia attivo.',
-      pt: 'Não é possível ligar ao agente OpenSSH do Windows. Verifica se o serviço ssh-agent está ativo.',
-      nl: 'Kan geen verbinding maken met de Windows OpenSSH-agent. Controleer of de service ssh-agent actief is.',
-    },
+  'Could not connect to the Windows OpenSSH agent. Make sure the ssh-agent service is running.': {
+    es: 'No se puede conectar al agente OpenSSH de Windows. Comprueba que el servicio ssh-agent esté activo.',
+    ca: 'No es pot connectar a l’agent OpenSSH de Windows. Comprova que el servei ssh-agent estigui actiu.',
+    fr: 'Impossible de joindre l’agent OpenSSH de Windows. Vérifiez que le service ssh-agent est actif.',
+    de: 'Verbindung zum Windows-OpenSSH-Agenten fehlgeschlagen. Prüfe, ob der Dienst ssh-agent läuft.',
+    it: 'Impossibile connettersi all’agent OpenSSH di Windows. Verifica che il servizio ssh-agent sia attivo.',
+    pt: 'Não é possível ligar ao agente OpenSSH do Windows. Verifica se o serviço ssh-agent está ativo.',
+    nl: 'Kan geen verbinding maken met de Windows OpenSSH-agent. Controleer of de service ssh-agent actief is.',
+  },
   'The SSH agent could not list its keys.': {
     es: 'El agente SSH no ha podido listar las claves.',
     ca: 'L’agent SSH no ha pogut llistar les claus.',

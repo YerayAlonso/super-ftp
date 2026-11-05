@@ -1,6 +1,24 @@
 import type { Translations } from './types';
 
 export const connections = {
+  'Connection timeout (seconds)': {
+    es: 'Tiempo de espera de conexión (segundos)',
+    ca: 'Temps d’espera de connexió (segons)',
+    fr: 'Délai de connexion (secondes)',
+    de: 'Verbindungszeitlimit (Sekunden)',
+    it: 'Tempo limite di connessione (secondi)',
+    pt: 'Tempo limite de ligação (segundos)',
+    nl: 'Verbindingstime-out (seconden)',
+  },
+  'DNS, TCP and SSH share this limit. Increase it for slow servers.': {
+    es: 'DNS, TCP y SSH comparten este límite. Auméntalo para servidores lentos.',
+    ca: 'DNS, TCP i SSH comparteixen aquest límit. Augmenta’l per a servidors lents.',
+    fr: 'DNS, TCP et SSH partagent cette limite. Augmentez-la pour les serveurs lents.',
+    de: 'DNS, TCP und SSH teilen dieses Zeitlimit. Für langsame Server erhöhen.',
+    it: 'DNS, TCP e SSH condividono questo limite. Aumentalo per i server lenti.',
+    pt: 'DNS, TCP e SSH partilham este limite. Aumenta-o para servidores lentos.',
+    nl: 'DNS, TCP en SSH delen deze limiet. Verhoog deze voor trage servers.',
+  },
   'A new destination for your files.': {
     es: 'Un nuevo destino para tus archivos.',
     ca: 'Un nou destí per als teus fitxers.',
@@ -82,7 +100,7 @@ export const connections = {
     pt: 'Seleciona o ficheiro da chave SSH privada.',
     nl: 'Selecteer het bestand met de privé-SSH-sleutel.',
   },
-  'Passphrase': {
+  Passphrase: {
     es: 'Frase de paso',
     ca: 'Frase de pas',
     fr: 'Phrase secrète',
@@ -91,7 +109,7 @@ export const connections = {
     pt: 'Frase-passe',
     nl: 'Wachtzin',
   },
-  'optional': {
+  optional: {
     es: 'opcional',
     ca: 'opcional',
     fr: 'facultatif',
@@ -155,7 +173,7 @@ export const connections = {
       pt: 'Serão usadas as chaves do teu agente SSH. A chave privada não sai do agente. No Windows é necessário o serviço OpenSSH; no macOS e Linux, SSH_AUTH_SOCK.',
       nl: 'De sleutels van je SSH-agent worden gebruikt. De privésleutel verlaat de agent niet. Windows vereist de OpenSSH-service; macOS en Linux gebruiken SSH_AUTH_SOCK.',
     },
-  'Colour': {
+  Colour: {
     es: 'Color',
     ca: 'Color',
     fr: 'Couleur',
@@ -301,7 +319,7 @@ export const connections = {
       pt: 'É a primeira ligação a este servidor. Compara a impressão digital com a fornecida pelo administrador através de um canal independente antes de confiar.',
       nl: 'Dit is je eerste verbinding met deze server. Vergelijk de vingerafdruk via een onafhankelijk kanaal met die van de beheerder voordat je deze vertrouwt.',
     },
-  'Algorithm': {
+  Algorithm: {
     es: 'Algoritmo',
     ca: 'Algoritme',
     fr: 'Algorithme',
@@ -365,7 +383,7 @@ export const connections = {
     pt: 'Ligar a {name}',
     nl: 'Verbinden met {name}',
   },
-  'AUTHENTICATION': {
+  AUTHENTICATION: {
     es: 'AUTENTICACIÓN',
     ca: 'AUTENTICACIÓ',
     fr: 'AUTHENTIFICATION',

@@ -361,6 +361,7 @@ fn profile(port: u16) -> Connection {
         name: "Loopback fixture".into(),
         host: "127.0.0.1".into(),
         port,
+        connect_timeout_seconds: 20,
         username: "test".into(),
         auth_method: AuthMethod::Password,
         key_path: None,
@@ -369,6 +370,53 @@ fn profile(port: u16) -> Connection {
         local_path: None,
         color: "#b5e878".into(),
     }
+}
+
+#[tokio::test]
+async fn stalled_ssh_reports_the_phase_and_configured_timeout() {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let temp = tempfile::tempdir().unwrap();
+    let state = AppState::new(Store::load(temp.path().join("config")).unwrap());
+    let mut connection = profile(port);
+    connection.connect_timeout_seconds = 5;
+    // Accept TCP but never send an SSH banner; this needs no external network.
+    let server = tokio::spawn(async move {
+        let (stream, _) = listener.accept().await.unwrap();
+        std::future::pending::<()>().await;
+        drop(stream);
+    });
+    let error = crate::ssh::connect(&state, connection, None)
+        .await
+        .err()
+        .unwrap();
+    server.abort();
+    assert_eq!(error.code, "TIMEOUT");
+    assert!(
+        error
+            .message
+            .starts_with("SSH negotiation timed out after 5 seconds.")
+    );
+    let translation = error.translation.unwrap();
+    assert_eq!(translation.params["seconds"], "5");
+    assert!(state.sessions.lock().await.is_empty());
+}
+
+#[tokio::test]
+async fn refused_tcp_reports_the_phase() {
+    // Reserve a port without listening so concurrent fixtures cannot reuse it.
+    let socket = tokio::net::TcpSocket::new_v4().unwrap();
+    socket.bind("127.0.0.1:0".parse().unwrap()).unwrap();
+    let port = socket.local_addr().unwrap().port();
+    let temp = tempfile::tempdir().unwrap();
+    let state = AppState::new(Store::load(temp.path().join("config")).unwrap());
+    let error = crate::ssh::connect(&state, profile(port), None)
+        .await
+        .err()
+        .unwrap();
+    assert_eq!(error.code, "CONNECTION");
+    assert!(error.message.starts_with("TCP connection failed:"));
+    assert!(state.sessions.lock().await.is_empty());
 }
 
 fn transfer(direction: Direction, source: String, destination: String) -> Transfer {

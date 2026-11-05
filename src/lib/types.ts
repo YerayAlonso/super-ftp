@@ -6,6 +6,7 @@ export interface Connection {
   name: string;
   host: string;
   port: number;
+  connectTimeoutSeconds: number;
   username: string;
   authMethod: AuthMethod;
   keyPath: string | null;
@@ -58,12 +59,25 @@ export interface SessionInfo {
 
 export type Direction = 'upload' | 'download';
 export type TransferStatus =
-  'queued' | 'preparing' | 'transferring' | 'awaitingDecision' | 'completed' | 'failed' | 'cancelled';
+  | 'queued'
+  | 'preparing'
+  | 'transferring'
+  | 'awaitingDecision'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
 export interface TransferConflict {
-  id: string; source: string; destination: string; name: string; direction: Direction;
-  sourceSize: number; destinationSize: number | null; destinationModified: number | null;
+  id: string;
+  source: string;
+  destination: string;
+  name: string;
+  direction: Direction;
+  sourceSize: number;
+  destinationSize: number | null;
+  destinationModified: number | null;
 }
-export type ConflictDecision = { action: 'overwrite' | 'skip' | 'cancel' } | { action: 'rename'; name: string };
+export type ConflictDecision =
+  { action: 'overwrite' | 'skip' | 'cancel' } | { action: 'rename'; name: string };
 export interface Transfer {
   id: string;
   sessionId: string;
@@ -121,6 +135,7 @@ export function newConnection(): Connection {
     name: '',
     host: '',
     port: 22,
+    connectTimeoutSeconds: 20,
     username: '',
     authMethod: 'password',
     keyPath: null,

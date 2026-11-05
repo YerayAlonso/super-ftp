@@ -96,6 +96,12 @@ pub fn validate_connection(connection: &mut Connection) -> AppResult<()> {
     {
         return Err(AppError::new("VALIDATION", "Select a private SSH key."));
     }
+    if !(5..=120).contains(&connection.connect_timeout_seconds) {
+        return Err(AppError::new(
+            "VALIDATION",
+            "Connection timeout must be between 5 and 120 seconds.",
+        ));
+    }
     if connection.remote_path.trim().is_empty() {
         connection.remote_path = ".".into();
     }
@@ -163,6 +169,7 @@ mod tests {
             name: " Work ".into(),
             host: " EXAMPLE.COM ".into(),
             port: 22,
+            connect_timeout_seconds: 20,
             username: " deploy ".into(),
             auth_method: AuthMethod::Password,
             key_path: None,
@@ -188,6 +195,34 @@ mod tests {
         let json = serde_json::to_string(&connection()).unwrap();
         assert!(!json.contains("\"secret\""));
         assert!(!json.contains("\"password\":"));
+    }
+
+    #[test]
+    fn connection_timeout_is_backward_compatible_and_persisted() {
+        let mut json = serde_json::to_value(connection()).unwrap();
+        json.as_object_mut()
+            .unwrap()
+            .remove("connectTimeoutSeconds");
+        let mut value: Connection = serde_json::from_value(json).unwrap();
+        assert_eq!(value.connect_timeout_seconds, 20);
+        value.connect_timeout_seconds = 60;
+        let saved = serde_json::to_vec(&value).unwrap();
+        let restored: Connection = serde_json::from_slice(&saved).unwrap();
+        assert_eq!(restored.connect_timeout_seconds, 60);
+    }
+
+    #[test]
+    fn validates_connection_timeout_bounds() {
+        for seconds in [0, 4, 121, u64::MAX] {
+            let mut value = connection();
+            value.connect_timeout_seconds = seconds;
+            assert!(validate_connection(&mut value).is_err());
+        }
+        for seconds in [5, 20, 60, 120] {
+            let mut value = connection();
+            value.connect_timeout_seconds = seconds;
+            validate_connection(&mut value).unwrap();
+        }
     }
 
     #[test]

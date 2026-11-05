@@ -1664,6 +1664,76 @@ kbd {
 .modal.small-modal {
   width: min(470px, calc(100vw - 40px));
 }
+.modal.wide-modal[open] {
+  display: flex;
+  flex-direction: column;
+  width: min(860px, calc(100vw - 40px));
+  overflow: hidden;
+}
+.wide-modal .modal-header,
+.wide-modal .modal-footer {
+  flex-shrink: 0;
+}
+.wide-modal .modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.wide-modal .modal-footer {
+  position: static;
+}
+.connection-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 0 28px;
+}
+.connection-details,
+.connection-settings {
+  min-width: 0;
+}
+.connection-settings {
+  border-left: 1px solid var(--border);
+  padding-left: 28px;
+}
+.connection-settings h3 {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 510;
+}
+.connection-form .field-hint,
+.connection-form .credential-field .optional {
+  position: static;
+  color: var(--dim);
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.connection-form .credential-field .optional {
+  order: 2;
+}
+.connection-form .timeout-field > input {
+  max-width: 100px;
+}
+.connection-colour {
+  margin-top: 21px;
+  padding-top: 17px;
+  border-top: 1px solid var(--border);
+}
+.connection-form > .form-error {
+  grid-column: 1 / -1;
+}
+@media (max-width: 760px) {
+  .connection-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .connection-settings {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 20px 0 0;
+  }
+}
 .modal-header {
   display: flex;
   align-items: flex-start;

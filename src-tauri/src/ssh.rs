@@ -101,16 +101,29 @@ pub async fn connect(
         keepalive_max: 3,
         ..Default::default()
     });
-    let result = tokio::time::timeout(
-        Duration::from_secs(20),
-        client::connect(
-            config,
-            (connection.host.as_str(), connection.port),
-            verifier,
-        ),
+    // One shared deadline preserves the configured total connection budget.
+    // Authentication and SFTP startup retain their separate limits below.
+    let seconds = connection.connect_timeout_seconds.clamp(5, 120);
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(seconds);
+    let addresses: Vec<_> = tokio::time::timeout_at(
+        deadline,
+        tokio::net::lookup_host((connection.host.as_str(), connection.port)),
     )
     .await
-    .map_err(|_| AppError::new("TIMEOUT", "The server did not respond within 20 seconds."))?;
+    .map_err(|_| connection_timeout("DNS lookup timed out after {seconds} seconds. Check DNS or increase the connection timeout.", seconds))?
+    .map_err(|error| connection_failure("DNS lookup failed: {detail}", error))?
+    .collect();
+    let stream = tokio::time::timeout_at(deadline, tokio::net::TcpStream::connect(addresses.as_slice()))
+        .await
+        .map_err(|_| connection_timeout("TCP connection timed out after {seconds} seconds. Check the host, port, network or firewall, or increase the connection timeout.", seconds))?
+        .map_err(|error| connection_failure("TCP connection failed: {detail}", error))?;
+    // Preserve the socket setting normally applied by russh::client::connect.
+    if config.nodelay {
+        let _ = stream.set_nodelay(true);
+    }
+    let result = tokio::time::timeout_at(deadline, client::connect_stream(config, stream, verifier))
+        .await
+        .map_err(|_| connection_timeout("SSH negotiation timed out after {seconds} seconds. The TCP connection succeeded; check the SSH service or increase the connection timeout.", seconds))?;
     let key = observed.lock().ok().and_then(|guard| guard.clone());
     let mut ssh = match result {
         Ok(ssh) => ssh,
@@ -148,7 +161,10 @@ pub async fn connect(
                     }));
                 }
             }
-            return Err(error.into());
+            return Err(connection_failure(
+                "SSH negotiation failed: {detail}",
+                error,
+            ));
         }
     };
     let authenticated = tokio::time::timeout(Duration::from_secs(45), async {
@@ -235,6 +251,14 @@ pub async fn connect(
     }
     sessions.insert(session.info.id.clone(), session.clone());
     Ok(session)
+}
+
+fn connection_timeout(template: &str, seconds: u64) -> AppError {
+    AppError::parameterized("TIMEOUT", template, "seconds", seconds.to_string())
+}
+
+fn connection_failure(template: &str, error: impl std::fmt::Display) -> AppError {
+    AppError::parameterized("CONNECTION", template, "detail", error.to_string())
 }
 
 async fn authenticate_agent(ssh: &mut client::Handle<Verifier>, user: &str) -> AppResult<bool> {

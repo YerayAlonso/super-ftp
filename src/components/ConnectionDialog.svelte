@@ -27,14 +27,11 @@
     onSave: (connection: Connection, secret: string | null, connect: boolean) => Promise<void>;
   } = $props();
   const initial = untrack(() => connection);
-  let draft = $state<Connection>({ ...(initial ?? newConnection()) });
+  let draft = $state<Connection>({ ...newConnection(), ...initial });
   let secret = $state('');
   let showSecret = $state(false);
   let busy = $state(false);
   let error = $state<DisplayMessage>('');
-  let advanced = $state(
-    Boolean(initial?.localPath || (initial?.remotePath && initial.remotePath !== '.')),
-  );
 
   const authOptions: { value: AuthMethod; label: MessageKey; icon: typeof KeyRound }[] = [
     { value: 'password', label: 'Password', icon: LockKeyhole },
@@ -72,6 +69,7 @@
         {
           ...draft,
           port: Number(draft.port),
+          connectTimeoutSeconds: Number(draft.connectTimeoutSeconds),
           rememberSecret: draft.authMethod !== 'agent' && draft.rememberSecret,
         },
         secret || null,
@@ -89,121 +87,159 @@
 <Modal
   title={i18n.t(connection ? 'Edit connection' : 'A new destination for your files.')}
   eyebrow={i18n.t(connection ? 'SAVED CONNECTION' : 'NEW CONNECTION')}
+  wide
   {busy}
   {onClose}
 >
   <form id="connection-form" class="connection-form" onsubmit={submit}>
-    <p class="form-intro">{i18n.t('Your server details, all in one place. Always within reach.')}</p>
-    <label class="field"
-      >{i18n.t('Connection name')}<input
-        data-initial-focus
-        required
-        maxlength="100"
-        placeholder={i18n.t('e.g. Production website')}
-        bind:value={draft.name}
-      /></label
-    >
-    <div class="form-row host-row">
+    <div class="connection-details">
       <label class="field"
-        >{i18n.t('Server')}<input
+        >{i18n.t('Connection name')}<input
+          data-initial-focus
           required
-          maxlength="253"
-          placeholder="sftp.exemple.cat"
-          bind:value={draft.host}
-          spellcheck="false"
-          autocapitalize="off"
-        /></label
-      ><label class="field port-field"
-        >{i18n.t('Port')}<input
-          type="number"
-          required
-          min="1"
-          max="65535"
-          bind:value={draft.port}
+          maxlength="100"
+          placeholder={i18n.t('e.g. Production website')}
+          bind:value={draft.name}
         /></label
       >
-    </div>
-    <label class="field"
-      >{i18n.t('Username')}<input
-        required
-        maxlength="255"
-        placeholder="deploy"
-        bind:value={draft.username}
-        autocomplete="username"
-        spellcheck="false"
-      /></label
-    >
-    <fieldset class="auth-fieldset">
-      <legend>{i18n.t('Authentication')}</legend>
-      <div class="auth-options">
-        {#each authOptions as option}<button
-            type="button"
-            class:active={draft.authMethod === option.value}
-            onclick={() => {
-              draft.authMethod = option.value;
-              secret = '';
-              draft.rememberSecret = false;
-            }}><option.icon size={15} />{i18n.t(option.label)}</button
-          >{/each}
+      <div class="form-row host-row">
+        <label class="field"
+          >{i18n.t('Server')}<input
+            required
+            maxlength="253"
+            placeholder="sftp.exemple.cat"
+            bind:value={draft.host}
+            spellcheck="false"
+            autocapitalize="off"
+          /></label
+        ><label class="field port-field"
+          >{i18n.t('Port')}<input
+            type="number"
+            required
+            min="1"
+            max="65535"
+            bind:value={draft.port}
+          /></label
+        >
       </div>
-    </fieldset>
-    {#if draft.authMethod === 'keyFile'}<label class="field"
-        >{i18n.t('Private key')}
+      <label class="field"
+        >{i18n.t('Username')}<input
+          required
+          maxlength="255"
+          placeholder="deploy"
+          bind:value={draft.username}
+          autocomplete="username"
+          spellcheck="false"
+        /></label
+      >
+      <fieldset class="auth-fieldset">
+        <legend>{i18n.t('Authentication')}</legend>
+        <div class="auth-options">
+          {#each authOptions as option}<button
+              type="button"
+              class:active={draft.authMethod === option.value}
+              onclick={() => {
+                draft.authMethod = option.value;
+                secret = '';
+                draft.rememberSecret = false;
+              }}><option.icon size={15} />{i18n.t(option.label)}</button
+            >{/each}
+        </div>
+      </fieldset>
+      {#if draft.authMethod === 'keyFile'}<label class="field"
+          >{i18n.t('Private key')}
+          <div class="input-with-button">
+            <input
+              required
+              placeholder="~/.ssh/id_ed25519"
+              bind:value={draft.keyPath}
+              spellcheck="false"
+            /><button
+              type="button"
+              class="icon-button"
+              aria-label={i18n.t('Select private SSH key')}
+              onclick={pickKey}><FolderOpen size={17} /></button
+            >
+          </div></label
+        >{/if}
+      {#if draft.authMethod !== 'agent'}
+        <label class="field credential-field"
+          >{i18n.t(draft.authMethod === 'password' ? 'Password' : 'Passphrase')}<span
+            class="optional"
+            >{i18n.t(
+              draft.authMethod === 'keyFile' ? 'optional' : 'can be requested when connecting',
+            )}</span
+          >
+          <div class="input-with-button">
+            <input
+              type={showSecret ? 'text' : 'password'}
+              bind:value={secret}
+              placeholder={connection?.rememberSecret
+                ? i18n.t('Leave blank to keep the saved secret')
+                : '••••••••••••'}
+              autocomplete="new-password"
+            /><button
+              type="button"
+              class="icon-button"
+              aria-label={i18n.t(showSecret ? 'Hide secret' : 'Show secret')}
+              onclick={() => (showSecret = !showSecret)}
+              >{#if showSecret}<EyeOff size={16} />{:else}<Eye size={16} />{/if}</button
+            >
+          </div></label
+        >
+        <label class="checkbox-field"
+          ><input type="checkbox" bind:checked={draft.rememberSecret} /><span
+            >{i18n.t('Save the secret in the system credential store')}</span
+          ></label
+        >
+      {:else}<div class="form-note">
+          <KeyRound size={16} /><span
+            >{i18n.t(
+              'Your SSH agent’s keys will be used. The private key never leaves the agent. Windows requires the OpenSSH service; macOS and Linux use SSH_AUTH_SOCK.',
+            )}</span
+          >
+        </div>{/if}
+    </div>
+    <section class="connection-settings" aria-labelledby="connection-settings-title">
+      <h3 id="connection-settings-title">{i18n.t('Advanced options')}</h3>
+      <label class="field timeout-field">
+        {i18n.t('Connection timeout (seconds)')}
+        <input
+          type="number"
+          required
+          min="5"
+          max="120"
+          step="1"
+          bind:value={draft.connectTimeoutSeconds}
+        />
+        <span class="field-hint"
+          >{i18n.t('DNS, TCP and SSH share this limit. Increase it for slow servers.')}</span
+        >
+      </label>
+      <label class="field"
+        >{i18n.t('Starting remote folder')}<input
+          bind:value={draft.remotePath}
+          placeholder={i18n.t('. (home folder)')}
+          spellcheck="false"
+        /></label
+      ><label class="field"
+        >{i18n.t('Starting local folder')}
         <div class="input-with-button">
           <input
-            required
-            placeholder="~/.ssh/id_ed25519"
-            bind:value={draft.keyPath}
+            bind:value={draft.localPath}
+            placeholder={i18n.t('Home folder')}
             spellcheck="false"
           /><button
             type="button"
             class="icon-button"
-            aria-label={i18n.t('Select private SSH key')}
-            onclick={pickKey}><FolderOpen size={17} /></button
-          >
-        </div></label
-      >{/if}
-    {#if draft.authMethod !== 'agent'}
-      <label class="field"
-        >{i18n.t(draft.authMethod === 'password' ? 'Password' : 'Passphrase')}<span
-          class="optional"
-          >{i18n.t(
-            draft.authMethod === 'keyFile' ? 'optional' : 'can be requested when connecting',
-          )}</span
-        >
-        <div class="input-with-button">
-          <input
-            type={showSecret ? 'text' : 'password'}
-            bind:value={secret}
-            placeholder={connection?.rememberSecret
-              ? i18n.t('Leave blank to keep the saved secret')
-              : '••••••••••••'}
-            autocomplete="new-password"
-          /><button
-            type="button"
-            class="icon-button"
-            aria-label={i18n.t(showSecret ? 'Hide secret' : 'Show secret')}
-            onclick={() => (showSecret = !showSecret)}
-            >{#if showSecret}<EyeOff size={16} />{:else}<Eye size={16} />{/if}</button
+            aria-label={i18n.t('Select starting local folder')}
+            onclick={pickLocal}><FolderOpen size={16} /></button
           >
         </div></label
       >
-      <label class="checkbox-field"
-        ><input type="checkbox" bind:checked={draft.rememberSecret} /><span
-          >{i18n.t('Save the secret in the system credential store')}</span
-        ></label
-      >
-    {:else}<div class="form-note">
-        <KeyRound size={16} /><span
-          >{i18n.t(
-            'Your SSH agent’s keys will be used. The private key never leaves the agent. Windows requires the OpenSSH service; macOS and Linux use SSH_AUTH_SOCK.',
-          )}</span
-        >
-      </div>{/if}
-    <div class="connection-options">
-      <div>
-        <span class="field-label">{i18n.t('Colour')}</span>
-        <div class="color-options">
+      <div class="connection-colour">
+        <span class="field-label" id="connection-colour-label">{i18n.t('Colour')}</span>
+        <div class="color-options" role="group" aria-labelledby="connection-colour-label">
           {#each COLORS as color}<button
               type="button"
               style:--swatch={color}
@@ -215,40 +251,13 @@
             >{/each}
         </div>
       </div>
-      <button type="button" class="text-button" onclick={() => (advanced = !advanced)}
-        >{i18n.t(advanced ? 'Hide options' : 'Advanced options')}
-        <span>{advanced ? '−' : '+'}</span></button
-      >
-    </div>
-    {#if advanced}<div class="advanced-fields">
-        <label class="field"
-          >{i18n.t('Starting remote folder')}<input
-            bind:value={draft.remotePath}
-            placeholder={i18n.t('. (home folder)')}
-            spellcheck="false"
-          /></label
-        ><label class="field"
-          >{i18n.t('Starting local folder')}
-          <div class="input-with-button">
-            <input
-              bind:value={draft.localPath}
-              placeholder={i18n.t('Home folder')}
-              spellcheck="false"
-            /><button
-              type="button"
-              class="icon-button"
-              aria-label={i18n.t('Select starting local folder')}
-              onclick={pickLocal}><FolderOpen size={16} /></button
-            >
-          </div></label
+      <div class="security-note">
+        <ShieldCheck size={16} /><span
+          >{i18n.t('SFTP only. Verified identity. No plaintext secrets.')}</span
         >
-      </div>{/if}
+      </div>
+    </section>
     {#if error}<div class="form-error" role="alert">{i18n.text(error)}</div>{/if}
-    <div class="security-note">
-      <ShieldCheck size={16} /><span
-        >{i18n.t('SFTP only. Verified identity. No plaintext secrets.')}</span
-      >
-    </div>
   </form>
   {#snippet footer()}<button class="button ghost" disabled={busy} onclick={onClose}
       >{i18n.t('Cancel')}</button
