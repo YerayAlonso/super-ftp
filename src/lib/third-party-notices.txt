@@ -1,6 +1,6 @@
 THIRD-PARTY LICENSE NOTICES — WINDOWS SNAPSHOT
-Cargo.lock SHA-256: f200e51f33b39dcdcad4cdb4f973d60a96e08551f6ae6b6f2f65cac72d145208
-package-lock.json SHA-256: d1dc1f1803ab40c82f4b3d29ed3ea2f768ea6e96c86c385b7aae763e0d561769
+Cargo.lock SHA-256: 6a82725095400e885c818c2bfa7935f7806c858d985ab85df7766b0b2a2d5629
+package-lock.json SHA-256: dba1934706869de924cd25d128bdcbc4b21744bda45d7e5afebcfe25e59dbf68
 Generated from the Windows-targeted Cargo dependency graph and installed npm packages.
 Includes build and development dependencies; inclusion does not imply code is shipped.
 Review notices, source availability and exact distributed dependencies before release.
@@ -5942,7 +5942,7 @@ SOFTWARE.
 
 ========================================================================
 Rust: MIT License (MIT)
-Packages: brotli-decompressor 6.2.0, cargo_toml 1.0.1, chrono 0.4.45, delegate 0.13.5, dpi 0.1.2, md5 0.8.1, super-ftp 0.1.2, tauri-plugin 2.7.2, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, webview2-com 0.39.1, webview2-com-macros 0.8.1, webview2-com-sys 0.39.1, windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.61.2, windows-threading 0.2.1, windows-version 0.1.7
+Packages: brotli-decompressor 6.2.0, cargo_toml 1.0.1, chrono 0.4.45, delegate 0.13.5, dpi 0.1.2, md5 0.8.1, minisign-verify 0.3.0, super-ftp 0.1.3, tauri-plugin 2.7.2, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-updater 2.14.1, webview2-com 0.39.1, webview2-com-macros 0.8.1, webview2-com-sys 0.39.1, windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-registry 0.6.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.61.2, windows-threading 0.2.1, windows-version 0.1.7
 
 MIT License
 
@@ -6165,7 +6165,7 @@ DEALINGS IN THE SOFTWARE.
 
 ========================================================================
 Rust: MIT License (MIT)
-Packages: adler2 2.0.1, anyhow 1.0.104, atomic-waker 1.1.2, camino 1.2.6, cargo-platform 0.1.9, cargo_metadata 0.19.2, curve25519-dalek-derive 0.1.1, displaydoc 0.2.7, dtoa 1.0.11, dyn-clone 1.0.20, erased-serde 0.4.11, fastrand 2.5.0, group 0.14.0, itoa 1.0.18, once_cell 1.21.4, pin-project-lite 0.2.17, proc-macro2 1.0.107, quote 1.0.47, rustversion 1.0.23, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde_bytes 0.11.19, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.154, serde_repr 0.1.21, servo_arc 0.4.3, syn 2.0.119, syn 3.0.9, thiserror 2.0.21, thiserror-impl 2.0.21, typeid 1.0.3, unicode-ident 1.0.27, zmij 1.0.23
+Packages: adler2 2.0.1, anyhow 1.0.104, atomic-waker 1.1.2, camino 1.2.6, cargo-platform 0.1.9, cargo_metadata 0.19.2, curve25519-dalek-derive 0.1.1, displaydoc 0.2.7, dtoa 1.0.11, dyn-clone 1.0.20, erased-serde 0.4.11, fastrand 2.5.0, group 0.14.0, itoa 1.0.18, once_cell 1.21.4, pin-project-lite 0.2.17, proc-macro2 1.0.107, quote 1.0.47, rustversion 1.0.23, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde_bytes 0.11.19, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.154, serde_repr 0.1.21, servo_arc 0.4.3, syn 2.0.119, syn 3.0.9, thiserror 2.0.21, thiserror-impl 2.0.21, typed-path 0.13.0, typeid 1.0.3, unicode-ident 1.0.27, zmij 1.0.23
 
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
@@ -6251,7 +6251,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ========================================================================
 Rust: MIT License (MIT)
-Packages: tracing-core 0.1.36
+Packages: tracing-core 0.1.36, zip 9.3.0
 
 The MIT License (MIT)
 

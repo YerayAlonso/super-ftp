@@ -2,13 +2,20 @@
 
 **Your files, your servers, one workspace.**
 
-Super FTP is a desktop **SFTP** client built with Rust, Tauri 2 and Svelte 5. Browse local and remote files side by side, manage multiple sessions, and transfer files over SSH. It uses the operating system's webview rather than bundling a browser engine.
+A simple desktop **SFTP** client for browsing local and remote files side by side, managing multiple connections and transferring files securely over SSH.
 
-This is a **functional preview**, not an independently audited or signed production release. macOS and Linux still require real-device validation.
+**[Download the Windows preview](https://github.com/YerayAlonso/super-ftp/releases)** · [Get started](#getting-started) · [Build from source](#development) · [Security](SECURITY.md) · [Contribute](CONTRIBUTING.md)
 
-[Features](#features) · [Get started](#getting-started) · [Build from source](#development) · [Security](SECURITY.md) · [Contribute](CONTRIBUTING.md) · [Release checklist](RELEASING.md)
+> **Early preview:** The Windows x64 installer is unsigned, and the project has not been independently audited. macOS and Linux have not been tested on real devices; no installers are currently provided. Read the [preview limitations](#preview-limitations) and [security notes](SECURITY.md) before use.
 
-> **Looking for a download?** The Windows x64 preview is available on [GitHub Releases](https://github.com/YerayAlonso/super-ftp/releases). It is unsigned and not independently audited; review the release notes and limitations before use. No macOS or Linux installer is provided.
+### Made for the essentials
+
+- **One workspace:** Browse local and remote files side by side and switch between independent sessions.
+- **Transfers with control:** Upload and download files and folders, see progress, cancel, retry and decide how to handle conflicts.
+- **Your connection, your choice:** Use passwords, SSH keys or an SSH agent, and verify the server fingerprint before connecting.
+- **Make it yours:** Choose from eight languages, light or dark themes, and adjustable interface size.
+
+Built with Rust, Tauri 2 and Svelte 5; Super FTP uses your operating system's webview instead of bundling a browser engine. It supports SFTP, not unencrypted FTP or FTPS.
 
 ## Features
 
@@ -22,7 +29,7 @@ This is a **functional preview**, not an independently audited or signed product
 - Use context menus to create folders, view properties, transfer or delete files. Remote entries can also be renamed. Deletion is permanent, requires confirmation and removes folders with their contents. Remote deletion is limited to 100,000 items and 64 levels; failures can leave a partially deleted tree.
 - Change languages instantly in Preferences without interrupting sessions. The choice is stored locally; English is the default when no valid choice is saved. Application-owned backend errors have English fallbacks. OS, SSH and SFTP library details may use their original language.
 - Adjust the interface text size from 80% to 130% in Preferences; the choice is stored locally. The whole interface scales together to keep controls and file lists aligned.
-- Manually check GitHub for newer public releases from Preferences, optionally including previews. No credentials are sent and nothing is downloaded or installed automatically. Private releases are not accessible through this check; the check considers at most the 100 most recent public releases.
+- Check GitHub for newer public releases at startup or manually from Preferences, optionally including previews. No credentials are sent and nothing is downloaded or installed automatically. The check considers at most the 100 most recent public releases.
 
 ## Development
 

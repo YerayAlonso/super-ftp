@@ -2,6 +2,10 @@
 
 Notable changes will be recorded here.
 
+## Unreleased
+
+- Check for new releases at startup, remember the preview preference, and prepare signed Windows updates.
+
 ## 0.1.2 — Preview
 
 - Integrated manual update checks, preview selection and release notes into Preferences without opening a separate dialog.

@@ -71,6 +71,8 @@ async function command<T>(name: string, args?: Record<string, unknown>): Promise
 
 export const api = {
   checkUpdates: (includePrereleases: boolean) => command<{ currentVersion: string; latestVersion: string | null; updateAvailable: boolean; prerelease: boolean; releaseNotes: string | null }>('check_updates', { includePrereleases }),
+  checkSignedUpdate: (includePrereleases: boolean) => command<string | null>('check_signed_update', { includePrereleases }),
+  installSignedUpdate: (includePrereleases: boolean, expectedVersion: string) => command<void>('install_signed_update', { includePrereleases, expectedVersion }),
   openReleasesPage: () => command<void>('open_releases_page'),
   connections: () => command<Connection[]>('get_connections'),
   saveConnection: (connection: Connection, secret: string | null) =>

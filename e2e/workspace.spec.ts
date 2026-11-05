@@ -33,14 +33,14 @@ test('third-party notices are accessible in the help dialog', async ({ page }) =
   await expect(notices).toContainText('https://crates.io/api/v1/crates/option-ext/0.2.0/download');
 });
 
-test('update checks are manual and previews are opt-in', async ({ page }) => {
+test('startup checks and manual checks respect preview selection', async ({ page }) => {
   await mockDesktop(page);
   await page.goto('/');
   await chooseLanguage(page, 'en');
   await page.getByRole('button', { name: 'Preferences', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('region', { name: 'Updates' })).toBeVisible();
-  expect(await page.evaluate(() => (window as any).__superftpTest.calls.some((call: any) => call.command === 'check_updates'))).toBe(false);
+  await expect.poll(() => page.evaluate(() => (window as any).__superftpTest.calls.filter((call: any) => call.command === 'check_updates').length)).toBe(1);
   await dialog.getByRole('button', { name: 'Check for updates' }).click();
   await expect(dialog.getByRole('status')).toHaveText('No matching public releases were found.');
   await dialog.getByLabel('Include preview releases').check();
@@ -52,6 +52,7 @@ test('update checks are manual and previews are opt-in', async ({ page }) => {
   const calls = await page.evaluate(() => (window as any).__superftpTest.calls.filter((call: any) => ['check_updates', 'open_releases_page'].includes(call.command)));
   expect(calls).toEqual([
     { command: 'check_updates', args: { includePrereleases: false } },
+    { command: 'check_updates', args: { includePrereleases: false } },
     { command: 'check_updates', args: { includePrereleases: true } },
     { command: 'open_releases_page', args: {} },
   ]);
@@ -62,6 +63,27 @@ test('update checks are manual and previews are opt-in', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'The file already exists' })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'The file already exists' })).toBeVisible();
+});
+
+test('startup announces a newer preview when previews were selected', async ({ page }) => {
+  await mockDesktop(page);
+  await page.addInitScript(() => {
+    localStorage.setItem('superftp-language', 'en');
+    localStorage.setItem('superftp-include-previews', 'true');
+  });
+  await page.goto('/');
+  const toast = page.locator('.toast').filter({ hasText: 'A newer version is available: 0.2.0' });
+  await expect(toast).toBeVisible();
+  await page.evaluate(() => { (window as any).__superftpTest.holdInstall = true; });
+  await toast.getByRole('button', { name: 'Install update' }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__superftpTest.calls.some((call: any) => call.command === 'install_signed_update' && call.args.expectedVersion === '0.2.0' && call.args.includePrereleases))).toBe(true);
+  await expect(toast.getByRole('button', { name: 'Installing update…' })).toBeDisabled();
+  await toast.getByRole('button', { name: 'Updates' }).click();
+  const preferences = page.getByRole('dialog', { name: 'Preferences' });
+  await expect(preferences.getByLabel('Include preview releases')).toBeChecked();
+  await expect(preferences.getByRole('button', { name: 'Installing update…' })).toBeDisabled();
+  await page.evaluate(() => (window as any).__superftpTest.finishInstall());
+  await expect(preferences.getByRole('button', { name: 'Install update' })).toBeEnabled();
 });
 
 test('interface text size scales, persists and resets', async ({ page }) => {
@@ -328,6 +350,11 @@ async function mockDesktop(page: Page, challenge = false) {
           if (command === 'check_updates') return args.includePrereleases
             ? { currentVersion: '0.1.0', latestVersion: '0.2.0', updateAvailable: true, prerelease: true, releaseNotes: 'Preview test notes' }
             : { currentVersion: '0.1.0', latestVersion: null, updateAvailable: false, prerelease: false, releaseNotes: null };
+          if (command === 'check_signed_update') return args.includePrereleases ? '0.2.0' : null;
+          if (command === 'install_signed_update') {
+            if (app.__superftpTest.holdInstall) await new Promise<void>(resolve => { app.__superftpTest.finishInstall = resolve; });
+            return;
+          }
           if (command === 'open_releases_page') return;
           if (command === 'plugin:dialog|open') return 'C:\\Test';
           if (

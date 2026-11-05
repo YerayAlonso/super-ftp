@@ -1,6 +1,6 @@
 [package]
 name = "super-ftp"
-version = "0.1.2"
+version = "0.1.3"
 description = "A small, secure, cross-platform SFTP workspace"
 edition = "2024"
 rust-version = "1.90"
@@ -31,9 +31,12 @@ dunce = "1"
 reqwest = { version = "0.13", default-features = false, features = ["rustls"] }
 semver = "1"
 open = "5"
+tauri-plugin-updater = "2.14.1"
 
 [dev-dependencies]
 rand = "0.10"
+base64 = "0.23"
+tauri = { version = "2", features = ["test"] }
 
 [profile.release]
 panic = "abort"
