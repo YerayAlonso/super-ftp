@@ -4,6 +4,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Keep Node.js types aligned with Node 24 in the build and CI workflows.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: cargo
     directory: /src-tauri
     schedule:
