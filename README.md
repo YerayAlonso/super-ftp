@@ -8,6 +8,10 @@ A simple desktop **SFTP** client for browsing local and remote files side by sid
 
 > **Early preview:** The Windows x64 installer is unsigned, and the project has not been independently audited. macOS and Linux have not been tested on real devices; no installers are currently provided. Read the [preview limitations](#preview-limitations) and [security notes](SECURITY.md) before use.
 
+![Super FTP workspace in the web preview](docs/images/workspace-preview.png)
+
+*Workspace layout preview with no real files or server connection. The desktop app is required to browse local files and connect over SFTP.*
+
 ### Made for the essentials
 
 - **One workspace:** Browse local and remote files side by side and switch between independent sessions.
