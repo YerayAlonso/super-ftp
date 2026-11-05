@@ -668,10 +668,23 @@ mod tests {
                 "https://github.com/YerayAlonso/super-ftp/releases/download/v{version}/{filename}"
             )
         });
-        let manifest = serde_json::json!({ "version": version, "platforms": { "test-target": {
-            "url": download_url,
-            "signature": signature.trim()
-        }}});
+        let manifest_url = std::env::var("SUPERFTP_SIGNED_FIXTURE_MANIFEST_URL").ok();
+        let manifest = if let Some(url) = manifest_url {
+            let client = reqwest::Client::builder()
+                .timeout(Duration::from_secs(15))
+                .redirect(reqwest::redirect::Policy::none())
+                .build()
+                .unwrap();
+            fetch_manifest(&client, &url)
+                .await
+                .expect("HTTPS manifest retrieval")
+                .expect("manifest exists")
+        } else {
+            serde_json::json!({ "version": version, "platforms": { "test-target": {
+                "url": download_url,
+                "signature": signature.trim()
+            }}})
+        };
         let update = updater
             .restore_update(manifest.clone())
             .unwrap()
