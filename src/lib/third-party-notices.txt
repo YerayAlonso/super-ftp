@@ -1,6 +1,6 @@
 THIRD-PARTY LICENSE NOTICES — WINDOWS SNAPSHOT
 Cargo.lock SHA-256: 6a82725095400e885c818c2bfa7935f7806c858d985ab85df7766b0b2a2d5629
-package-lock.json SHA-256: dba1934706869de924cd25d128bdcbc4b21744bda45d7e5afebcfe25e59dbf68
+package-lock.json SHA-256: 1929b1086f7782c96a54b290b6df345f3143555632277238e4fba2bbd5410af1
 Generated from the Windows-targeted Cargo dependency graph and installed npm packages.
 Includes build and development dependencies; inclusion does not imply code is shipped.
 Review notices, source availability and exact distributed dependencies before release.
@@ -11693,7 +11693,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 ========================================================================
-npm: prettier-plugin-svelte 3.5.2 (MIT) — LICENSE
+npm: prettier-plugin-svelte 4.1.1 (MIT) — LICENSE
 
 MIT License
 
