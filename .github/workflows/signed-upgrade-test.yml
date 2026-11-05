@@ -93,6 +93,7 @@ jobs:
           $env:SUPERFTP_TEST_INSTALLER = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
           if ('${{ inputs.use_project_candidate }}' -eq 'true') {
             $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'project.pub'
+            $env:SUPERFTP_TEST_MANIFEST_URL = 'https://raw.githubusercontent.com/YerayAlonso/super-ftp/test-feed-013/updates/preview.json'
           } else {
             $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'ci-only.key.pub'
           }

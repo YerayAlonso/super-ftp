@@ -148,18 +148,7 @@ pub async fn install_signed_update(
     if update.version != expected_version {
         return Err(fail());
     }
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(180))
-        .redirect(reqwest::redirect::Policy::custom(|attempt| {
-            let url = attempt.url();
-            if attempt.previous().len() < 5 && allowed_download_redirect(url) {
-                attempt.follow()
-            } else {
-                attempt.error("Untrusted update redirect")
-            }
-        }))
-        .build()
-        .map_err(|_| fail())?;
+    let client = download_client(Duration::from_secs(180)).map_err(|_| fail())?;
     let bytes = download_verified(&client, &update).await?;
     // Holding this lock prevents enqueue from starting new tasks between the
     // active-transfer check and the Windows updater closing the application.
@@ -210,6 +199,19 @@ async fn download_verified(
     }
     update.verify(&bytes).map_err(|_| fail())?;
     Ok(bytes)
+}
+
+fn download_client(timeout: Duration) -> reqwest::Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .timeout(timeout)
+        .redirect(reqwest::redirect::Policy::custom(|attempt| {
+            if attempt.previous().len() < 5 && allowed_download_redirect(attempt.url()) {
+                attempt.follow()
+            } else {
+                attempt.error("Untrusted update redirect")
+            }
+        }))
+        .build()
 }
 
 #[derive(Deserialize)]
@@ -589,43 +591,64 @@ mod tests {
             .plugin(tauri_plugin_updater::Builder::new().build())
             .build(context)
             .unwrap();
+        let manifest_url = std::env::var("SUPERFTP_TEST_MANIFEST_URL").ok();
         let updater = app
             .updater_builder()
-            .target("test-target")
+            .target(if manifest_url.is_some() {
+                "windows-x86_64"
+            } else {
+                "test-target"
+            })
             .executable_path(install.join("super-ftp.exe"))
             .endpoints(vec!["https://example.invalid/update".parse().unwrap()])
             .unwrap()
             .build()
             .unwrap();
-        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-        let address = listener.local_addr().unwrap();
-        let server = std::thread::spawn(move || {
-            let (mut stream, _) = listener.accept().unwrap();
-            stream
-                .set_read_timeout(Some(Duration::from_secs(5)))
+        let (manifest, server) = if let Some(url) = manifest_url {
+            let client = reqwest::Client::builder()
+                .timeout(Duration::from_secs(15))
+                .redirect(reqwest::redirect::Policy::none())
+                .build()
                 .unwrap();
-            let mut request = [0u8; 1024];
-            let _ = stream.read(&mut request).unwrap();
-            write!(
-                stream,
-                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
-                bytes.len()
+            (fetch_manifest(&client, &url).await.unwrap().unwrap(), None)
+        } else {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let address = listener.local_addr().unwrap();
+            let server = std::thread::spawn(move || {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(5)))
+                    .unwrap();
+                let mut request = [0u8; 1024];
+                let _ = stream.read(&mut request).unwrap();
+                write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                    bytes.len()
+                )
+                .unwrap();
+                stream.write_all(&bytes).unwrap();
+            });
+            (
+                serde_json::json!({ "version": "0.1.3", "platforms": { "test-target": {
+                    "url": format!("http://{address}/fixture"), "signature": signature.trim()
+                }}}),
+                Some(server),
             )
-            .unwrap();
-            stream.write_all(&bytes).unwrap();
-        });
-        let manifest = serde_json::json!({ "version": "0.1.3", "platforms": { "test-target": {
-            "url": format!("http://{address}/fixture"), "signature": signature.trim()
-        }}});
+        };
         let update = updater
             .restore_update(manifest)
             .unwrap()
             .unwrap()
             .restart_after_install(false);
-        let bytes = download_verified(&reqwest::Client::new(), &update)
+        assert_eq!(update.version, "0.1.3");
+        assert!(allowed_installer_url(&update.download_url));
+        let bytes = download_verified(&download_client(Duration::from_secs(180)).unwrap(), &update)
             .await
             .unwrap();
-        server.join().unwrap();
+        if let Some(server) = server {
+            server.join().unwrap();
+        }
         // Verifies the signature again, then starts NSIS and exits the process.
         update.install(bytes).unwrap();
         panic!("Windows updater unexpectedly returned without exiting");
