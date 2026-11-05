@@ -656,9 +656,14 @@ mod tests {
             .plugin(tauri_plugin_updater::Builder::new().build())
             .build(context)
             .unwrap();
+        let manifest_url = std::env::var("SUPERFTP_SIGNED_FIXTURE_MANIFEST_URL").ok();
         let updater = app
             .updater_builder()
-            .target("test-target")
+            .target(if manifest_url.is_some() {
+                "windows-x86_64"
+            } else {
+                "test-target"
+            })
             .endpoints(vec!["https://example.invalid/update".parse().unwrap()])
             .unwrap()
             .build()
@@ -668,7 +673,6 @@ mod tests {
                 "https://github.com/YerayAlonso/super-ftp/releases/download/v{version}/{filename}"
             )
         });
-        let manifest_url = std::env::var("SUPERFTP_SIGNED_FIXTURE_MANIFEST_URL").ok();
         let manifest = if let Some(url) = manifest_url {
             let client = reqwest::Client::builder()
                 .timeout(Duration::from_secs(15))
