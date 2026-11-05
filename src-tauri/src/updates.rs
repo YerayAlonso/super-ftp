@@ -631,11 +631,16 @@ mod tests {
         panic!("Windows updater unexpectedly returned without exiting");
     }
 
-    #[test]
+    #[tokio::test]
     #[ignore = "requires a locally signed installer fixture"]
-    fn project_key_verifies_signed_installer_fixture() {
+    async fn project_key_verifies_signed_installer_fixture() {
         let dir = std::env::var("SUPERFTP_SIGNED_FIXTURE_DIR").expect("fixture directory required");
-        let path = std::path::Path::new(&dir).join("Super.FTP_0.1.2_x64-setup.exe");
+        let version =
+            std::env::var("SUPERFTP_SIGNED_FIXTURE_VERSION").unwrap_or_else(|_| "0.1.2".into());
+        let mut wrong_version = semver::Version::parse(&version).expect("valid fixture version");
+        wrong_version.patch += 1;
+        let filename = format!("Super.FTP_{version}_x64-setup.exe");
+        let path = std::path::Path::new(&dir).join(&filename);
         let bytes = std::fs::read(&path).expect("fixture installer");
         let signature =
             std::fs::read_to_string(path.with_extension("exe.sig")).expect("fixture signature");
@@ -658,8 +663,8 @@ mod tests {
             .unwrap()
             .build()
             .unwrap();
-        let manifest = serde_json::json!({ "version": "0.1.2", "platforms": { "test-target": {
-            "url": "https://github.com/YerayAlonso/super-ftp/releases/download/v0.1.2/Super.FTP_0.1.2_x64-setup.exe",
+        let manifest = serde_json::json!({ "version": version, "platforms": { "test-target": {
+            "url": format!("https://github.com/YerayAlonso/super-ftp/releases/download/v{version}/{filename}"),
             "signature": signature.trim()
         }}});
         let update = updater
@@ -667,11 +672,34 @@ mod tests {
             .unwrap()
             .expect("newer fixture");
         assert!(update.verify(&bytes).is_ok());
+        // Explicit opt-in: exercise the real public HTTPS release download,
+        // without installing anything or publishing a fixture manifest.
+        if std::env::var("SUPERFTP_VERIFY_PUBLIC_DOWNLOAD").as_deref() == Ok("true") {
+            assert!(allowed_installer_url(&update.download_url));
+            let client = reqwest::Client::builder()
+                .timeout(Duration::from_secs(180))
+                .redirect(reqwest::redirect::Policy::custom(|attempt| {
+                    if attempt.previous().len() < 5 && allowed_download_redirect(attempt.url()) {
+                        attempt.follow()
+                    } else {
+                        attempt.error("Untrusted update redirect")
+                    }
+                }))
+                .build()
+                .unwrap();
+            let downloaded = download_verified(&client, &update)
+                .await
+                .expect("verified HTTPS download");
+            assert_eq!(
+                downloaded, bytes,
+                "public artifact differs from local signed fixture"
+            );
+        }
         let mut modified = bytes.clone();
         modified[0] ^= 1;
         assert!(update.verify(&modified).is_err());
         let mut wrong = manifest;
-        wrong["version"] = serde_json::json!("0.1.3");
+        wrong["version"] = serde_json::json!(wrong_version.to_string());
         assert!(
             updater
                 .restore_update(wrong)
