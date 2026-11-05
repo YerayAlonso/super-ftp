@@ -1,0 +1,9 @@
+{
+  "version": "0.1.3",
+  "platforms": {
+    "windows-x86_64": {
+      "url": "https://github.com/YerayAlonso/super-ftp/releases/download/v0.1.3/Super.FTP_0.1.3_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUSUlkYlVsdUttM0cxWDN2MFk1b0xNMVc4RDFwLzV6TkcyV2xQVGlZcjVpbDBTWVFEb05LQklEZGszSWNQcitzTHczVUlwaHhCNE5ZeUJOakh5amF6Mi9WUjR0Y3NGNUE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODY4MDQzCWZpbGU6U3VwZXIuRlRQXzAuMS4zX3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEuMwpMMndtTHR6SXNnNVRNa3dWZUlteVFaTnZTK21nTTE5RlhJdzBMaXV3cU1OdTY2K0o2blB1eFV0YTBpakk5YTlDem5FbnlMTXlpb1ZOT2ZQaXo3MWhCUT09Cg=="
+    }
+  }
+}
