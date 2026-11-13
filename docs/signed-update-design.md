@@ -1,16 +1,18 @@
 # Signed update release record
 
-## Current production status (2026-11-05)
+## Current production status (2026-11-13)
 
-- Windows preview updates are active through `updates/preview.json` on `main` and point to the signed `v0.1.3` prerelease.
-- The public raw GitHub preview URL returns HTTP 200 with the exact verified manifest. The stable feed `updates/stable.json` remains absent (HTTP 404).
-- The exact installer was verified with the project updater public key, version binding, altered-byte rejection, and SHA-256 `f91147190098f35413a973905a249be77c7471864af0bd7c752ca67abe1e7b2c`.
-- The published release assets were downloaded again and every listed SHA-256 checksum passed.
-- The HTTPS manifest/download fixture test passed against the production preview URL, verifying the signature and downloaded installer bytes.
-- GitHub Actions run `42002463936` passed the isolated Windows upgrade from public preview `0.1.2` using the exact project-key-signed `0.1.3` candidate and the temporary HTTPS test feed. It checked the installed version and executable.
-- Users on `0.1.2` and earlier must install `0.1.3` manually; those builds do not contain the updater public key. Later Windows previews can update in-app after opting in. Installation is blocked while transfers are active or waiting on a conflict decision.
-- `v0.1.3-test.1` and its temporary feed were test-only and have been removed. The branch and tag are deleted; the production `v0.1.3` preview remains published.
-- Stable updates remain disabled. There are no macOS or Linux installers. The unresolved RSA advisory remains visible; RSA compatibility is retained and Ed25519 is recommended.
+- Windows preview updates point to the signed [v0.1.4 prerelease](https://github.com/YerayAlonso/super-ftp/releases/tag/v0.1.4) through `updates/preview.json` on `main`. The stable feed remains absent; stable updates are disabled.
+- The exact installer was verified with the existing embedded project updater public key, version binding, modified-byte rejection and wrong-version rejection. Installer SHA-256: `4f524f94ba5873039e4c933120244a60cfd7c9864b3916ab80119322e24da626`.
+- Every published release asset was downloaded without authentication and matched the local verified artifact and published checksums. The application download helper also verified the real public HTTPS installer and signature.
+- [GitHub Actions run 43391642757](https://github.com/YerayAlonso/super-ftp/actions/runs/43391642757) passed the isolated Windows upgrade from public 0.1.3 using the exact project-signed 0.1.4 candidate while it was still a draft. It checked the installed version, matched the installed executable to the candidate and uninstalled it successfully.
+- [Desktop CI run 43390804443](https://github.com/YerayAlonso/super-ftp/actions/runs/43390804443) passed checks, tests, Clippy and builds on Windows, macOS and Linux, as well as UI tests. There are still no macOS or Linux installers or real-device validation for those platforms.
+- Users on 0.1.3 can update in-app after opting into previews. Users on 0.1.2 and earlier must install manually because those builds lack the updater public key. Installation is blocked while transfers are active or waiting on a conflict decision.
+- The unresolved RSA advisory remains documented. RSA compatibility is retained and Ed25519 is recommended; see SECURITY.md and the 0.1.4 preparation record for current audit results.
+
+## Previous activation (2026-11-05)
+
+The initial signed public preview feed targeted v0.1.3, with installer SHA-256 `f91147190098f35413a973905a249be77c7471864af0bd7c752ca67abe1e7b2c`. Isolated upgrade run `42002463936` verified the upgrade from 0.1.2. The temporary `v0.1.3-test.1` release and `test-feed-013` branch were removed after verification.
 
 ## Security and publishing notes
 
