@@ -644,7 +644,14 @@ mod tests {
             .unwrap()
             .restart_after_install(false);
         assert_eq!(update.version, version);
-        assert!(allowed_installer_url(&update.download_url));
+        if server.is_some() {
+            // Only this isolated test serves the already signed fixture locally.
+            assert_eq!(update.download_url.scheme(), "http");
+            assert_eq!(update.download_url.host_str(), Some("127.0.0.1"));
+            assert_eq!(update.download_url.path(), "/fixture");
+        } else {
+            assert!(allowed_installer_url(&update.download_url));
+        }
         let bytes = download_verified(&download_client(Duration::from_secs(180)).unwrap(), &update)
             .await
             .unwrap();
