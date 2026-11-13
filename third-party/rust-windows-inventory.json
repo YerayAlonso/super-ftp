@@ -1,7 +1,7 @@
 {
   "target": "x86_64-pc-windows-msvc",
   "tool": "cargo-about 0.9.3",
-  "cargoLockSha256": "6a82725095400e885c818c2bfa7935f7806c858d985ab85df7766b0b2a2d5629",
+  "cargoLockSha256": "33bfbde96f747e952601a0e48ba250bcc36419d8bdb9b6795e7c81c778443245",
   "scope": "resolved dependency graph; includes build and development dependencies, not a binary bill of materials",
   "packages": [
     {

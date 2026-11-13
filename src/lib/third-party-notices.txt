@@ -1,6 +1,6 @@
 THIRD-PARTY LICENSE NOTICES — WINDOWS SNAPSHOT
-Cargo.lock SHA-256: 6a82725095400e885c818c2bfa7935f7806c858d985ab85df7766b0b2a2d5629
-package-lock.json SHA-256: 1929b1086f7782c96a54b290b6df345f3143555632277238e4fba2bbd5410af1
+Cargo.lock SHA-256: 33bfbde96f747e952601a0e48ba250bcc36419d8bdb9b6795e7c81c778443245
+package-lock.json SHA-256: ee1b617eb490b8772c2b3c5b51346b146b99620360a485072948a6492bad964d
 Generated from the Windows-targeted Cargo dependency graph and installed npm packages.
 Includes build and development dependencies; inclusion does not imply code is shipped.
 Review notices, source availability and exact distributed dependencies before release.
@@ -5942,7 +5942,7 @@ SOFTWARE.
 
 ========================================================================
 Rust: MIT License (MIT)
-Packages: brotli-decompressor 6.2.0, cargo_toml 1.0.1, chrono 0.4.45, delegate 0.13.5, dpi 0.1.2, md5 0.8.1, minisign-verify 0.3.0, super-ftp 0.1.3, tauri-plugin 2.7.2, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-updater 2.14.1, webview2-com 0.39.1, webview2-com-macros 0.8.1, webview2-com-sys 0.39.1, windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-registry 0.6.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.61.2, windows-threading 0.2.1, windows-version 0.1.7
+Packages: brotli-decompressor 6.2.0, cargo_toml 1.0.1, chrono 0.4.45, delegate 0.13.5, dpi 0.1.2, md5 0.8.1, minisign-verify 0.3.0, super-ftp 0.1.4, tauri-plugin 2.7.2, tauri-plugin-dialog 2.8.4, tauri-plugin-fs 2.7.1, tauri-plugin-updater 2.14.1, webview2-com 0.39.1, webview2-com-macros 0.8.1, webview2-com-sys 0.39.1, windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-registry 0.6.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.61.2, windows-threading 0.2.1, windows-version 0.1.7
 
 MIT License
 

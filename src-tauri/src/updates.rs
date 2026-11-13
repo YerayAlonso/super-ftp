@@ -579,6 +579,8 @@ mod tests {
         let signature = std::fs::read_to_string(installer.with_extension("exe.sig")).unwrap();
         let public_key =
             std::fs::read_to_string(std::env::var("SUPERFTP_TEST_PUBLIC_KEY").unwrap()).unwrap();
+        let version = std::env::var("SUPERFTP_TEST_VERSION")
+            .unwrap_or_else(|_| env!("CARGO_PKG_VERSION").into());
         let mut context = tauri::test::mock_context(tauri::test::noop_assets());
         context.config_mut().plugins.0.insert(
             "updater".into(),
@@ -630,7 +632,7 @@ mod tests {
                 stream.write_all(&bytes).unwrap();
             });
             (
-                serde_json::json!({ "version": "0.1.3", "platforms": { "test-target": {
+                serde_json::json!({ "version": version, "platforms": { "test-target": {
                     "url": format!("http://{address}/fixture"), "signature": signature.trim()
                 }}}),
                 Some(server),
@@ -641,7 +643,7 @@ mod tests {
             .unwrap()
             .unwrap()
             .restart_after_install(false);
-        assert_eq!(update.version, "0.1.3");
+        assert_eq!(update.version, version);
         assert!(allowed_installer_url(&update.download_url));
         let bytes = download_verified(&download_client(Duration::from_secs(180)).unwrap(), &update)
             .await

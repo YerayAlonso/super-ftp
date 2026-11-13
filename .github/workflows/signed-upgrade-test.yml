@@ -4,19 +4,36 @@ on:
   workflow_dispatch:
     inputs:
       use_project_candidate:
-        description: Test the public project-key-signed 0.1.3 candidate instead of a disposable-key build
+        description: Test the exact project-signed release candidate instead of a disposable-key build
         type: boolean
         default: false
+      candidate_tag:
+        description: Release tag containing the exact project-signed candidate (drafts supported)
+        type: string
+        default: v0.1.4
+      candidate_sha256:
+        description: SHA-256 of the locally verified project-signed installer
+        type: string
+        default: 4f524f94ba5873039e4c933120244a60cfd7c9864b3916ab80119322e24da626
+      candidate_manifest_url:
+        description: Optional HTTPS manifest to exercise after public assets are available
+        type: string
+        default: ''
   push:
     branches: [test/signed-updater]
 
 permissions:
-  contents: read
+  # The exact candidate can be a private draft release.
+  contents: write
 
 jobs:
   signed-upgrade:
     runs-on: windows-latest
     timeout-minutes: 40
+    env:
+      SUPERFTP_CANDIDATE_TAG: ${{ inputs.candidate_tag }}
+      SUPERFTP_CANDIDATE_SHA256: ${{ inputs.candidate_sha256 }}
+      SUPERFTP_CANDIDATE_MANIFEST_URL: ${{ inputs.candidate_manifest_url }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
@@ -25,6 +42,13 @@ jobs:
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
       - run: npm ci
+      - name: Resolve candidate version
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw 'src-tauri/tauri.conf.json' | ConvertFrom-Json).version
+          "SUPERFTP_TEST_VERSION=$version" >> $env:GITHUB_ENV
+          $previous = '0.1.3'
+          "SUPERFTP_PREVIOUS_VERSION=$previous" >> $env:GITHUB_ENV
       - name: Build test installer
         if: ${{ inputs.use_project_candidate != true }}
         run: npm run desktop:build -- --bundles nsis
@@ -36,11 +60,11 @@ jobs:
           $fixture = Join-Path $env:RUNNER_TEMP 'superftp-signed-update-fixture'
           New-Item -ItemType Directory -Path $fixture | Out-Null
           $key = Join-Path $fixture 'ci-only.key'
-          $installer = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
-          Copy-Item -LiteralPath 'src-tauri/target/release/bundle/nsis/Super FTP_0.1.3_x64-setup.exe' -Destination $installer
+          $installer = Join-Path $fixture "Super.FTP_$($env:SUPERFTP_TEST_VERSION)_x64-setup.exe"
+          Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/Super FTP_$($env:SUPERFTP_TEST_VERSION)_x64-setup.exe" -Destination $installer
           & node_modules/.bin/tauri.cmd signer generate --password 'temporary-ci-key' --write-keys $key *> $null
           if ($LASTEXITCODE -ne 0) { throw 'Could not generate disposable signing key' }
-          & node_modules/.bin/tauri.cmd signer sign --private-key-path $key --password 'temporary-ci-key' --app-version 0.1.3 $installer *> $null
+          & node_modules/.bin/tauri.cmd signer sign --private-key-path $key --password 'temporary-ci-key' --app-version $env:SUPERFTP_TEST_VERSION $installer *> $null
           if ($LASTEXITCODE -ne 0) { throw 'Could not sign test installer' }
           & 'C:\Program Files\7-Zip\7z.exe' e $installer "-o$fixture\extracted" 'super-ftp.exe'
           if ($LASTEXITCODE -ne 0) { throw 'Could not extract test installer' }
@@ -53,11 +77,12 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $fixture = Join-Path $env:RUNNER_TEMP 'superftp-signed-update-fixture'
           New-Item -ItemType Directory -Path $fixture | Out-Null
-          gh release download v0.1.3-test.1 --repo '${{ github.repository }}' --dir $fixture --pattern 'Super.FTP_0.1.3_x64-setup.exe' --pattern 'Super.FTP_0.1.3_x64-setup.exe.sig'
+          if ($env:SUPERFTP_CANDIDATE_SHA256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'An independently verified candidate SHA-256 is required' }
+          gh release download $env:SUPERFTP_CANDIDATE_TAG --repo '${{ github.repository }}' --dir $fixture --pattern "Super.FTP_$($env:SUPERFTP_TEST_VERSION)_x64-setup.exe" --pattern "Super.FTP_$($env:SUPERFTP_TEST_VERSION)_x64-setup.exe.sig"
           if ($LASTEXITCODE -ne 0) { throw 'Project-signed test candidate download failed' }
-          $installer = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
+          $installer = Join-Path $fixture "Super.FTP_$($env:SUPERFTP_TEST_VERSION)_x64-setup.exe"
           $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $installer).Hash.ToLowerInvariant()
-          if ($actual -ne 'f91147190098f35413a973905a249be77c7471864af0bd7c752ca67abe1e7b2c') { throw 'Candidate hash does not match the locally verified installer' }
+          if ($actual -ne $env:SUPERFTP_CANDIDATE_SHA256.ToLowerInvariant()) { throw 'Candidate hash does not match the locally verified installer' }
           $config = Get-Content -Raw 'src-tauri/tauri.conf.json' | ConvertFrom-Json
           $publicKeyPath = Join-Path $fixture 'project.pub'
           Set-Content -LiteralPath $publicKeyPath -Value $config.plugins.updater.pubkey -NoNewline
@@ -74,13 +99,13 @@ jobs:
           $registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Super FTP'
           if (Test-Path $registration) { throw 'Unexpected pre-existing installation' }
           New-Item -ItemType Directory -Path $dir | Out-Null
-          gh release download v0.1.2 --repo '${{ github.repository }}' --dir $dir --pattern 'Super.FTP_0.1.2_x64-setup.exe' --pattern 'SHA256SUMS.txt'
+          gh release download "v$env:SUPERFTP_PREVIOUS_VERSION" --repo '${{ github.repository }}' --dir $dir --pattern "Super.FTP_$($env:SUPERFTP_PREVIOUS_VERSION)_x64-setup.exe" --pattern 'SHA256SUMS.txt'
           if ($LASTEXITCODE -ne 0) { throw 'Previous preview download failed' }
           $parts = (Get-Content -LiteralPath (Join-Path $dir 'SHA256SUMS.txt')) -split '  ', 2
-          $old = Join-Path $dir 'Super.FTP_0.1.2_x64-setup.exe'
-          if ($parts.Count -ne 2 -or $parts[1] -ne 'Super.FTP_0.1.2_x64-setup.exe' -or (Get-FileHash -Algorithm SHA256 -LiteralPath $old).Hash -ne $parts[0]) { throw 'Previous installer checksum mismatch' }
-          $process = Start-Process -FilePath $old -ArgumentList @('/S', "/D=$install") -Wait -PassThru
-          if ($process.ExitCode -ne 0 -or (Get-ItemProperty -LiteralPath $registration).DisplayVersion -ne '0.1.2') { throw 'Previous installer failed' }
+          $old = Join-Path $dir "Super.FTP_$($env:SUPERFTP_PREVIOUS_VERSION)_x64-setup.exe"
+          if ($parts.Count -ne 2 -or $parts[1] -ne "Super.FTP_$($env:SUPERFTP_PREVIOUS_VERSION)_x64-setup.exe" -or (Get-FileHash -Algorithm SHA256 -LiteralPath $old).Hash -ne $parts[0]) { throw 'Previous installer checksum mismatch' }
+          $process = Start-Process -FilePath $old -ArgumentList @('/S', "/D=$install") -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0 -or (Get-ItemProperty -LiteralPath $registration).DisplayVersion -ne $env:SUPERFTP_PREVIOUS_VERSION) { throw 'Previous installer failed' }
       - name: Run signed download and installer in isolated runner
         shell: pwsh
         run: |
@@ -90,10 +115,12 @@ jobs:
           $registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Super FTP'
           $env:SUPERFTP_ALLOW_INSTALL_TEST = 'isolated-runner'
           $env:SUPERFTP_TEST_INSTALL_DIR = $install
-          $env:SUPERFTP_TEST_INSTALLER = Join-Path $fixture 'Super.FTP_0.1.3_x64-setup.exe'
+          $env:SUPERFTP_TEST_INSTALLER = Join-Path $fixture "Super.FTP_$($env:SUPERFTP_TEST_VERSION)_x64-setup.exe"
           if ('${{ inputs.use_project_candidate }}' -eq 'true') {
             $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'project.pub'
-            $env:SUPERFTP_TEST_MANIFEST_URL = 'https://raw.githubusercontent.com/YerayAlonso/super-ftp/test-feed-013/updates/preview.json'
+            if ($env:SUPERFTP_CANDIDATE_MANIFEST_URL) {
+              $env:SUPERFTP_TEST_MANIFEST_URL = $env:SUPERFTP_CANDIDATE_MANIFEST_URL
+            }
           } else {
             $env:SUPERFTP_TEST_PUBLIC_KEY = Join-Path $fixture 'ci-only.key.pub'
           }
@@ -102,13 +129,13 @@ jobs:
           $updated = $false
           for ($i = 0; $i -lt 60; $i++) {
             $version = (Get-ItemProperty -LiteralPath $registration -ErrorAction SilentlyContinue).DisplayVersion
-            if ($version -eq '0.1.3') { $updated = $true; break }
+            if ($version -eq $env:SUPERFTP_TEST_VERSION) { $updated = $true; break }
             Start-Sleep -Seconds 1
           }
-          if (-not $updated) { throw 'Signed installer did not update to 0.1.3' }
+          if (-not $updated) { throw "Signed installer did not update to $env:SUPERFTP_TEST_VERSION" }
           $expected = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $fixture 'extracted\super-ftp.exe')).Hash
           $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $install 'super-ftp.exe')).Hash
           if ($expected -ne $actual) { throw 'Installed executable differs from the signed installer' }
           $uninstaller = Join-Path $install 'uninstall.exe'
-          $process = Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait -PassThru
+          $process = Start-Process -FilePath $uninstaller -ArgumentList '/S' -WindowStyle Hidden -Wait -PassThru
           if ($process.ExitCode -ne 0 -or (Test-Path $registration)) { throw 'Uninstall failed' }

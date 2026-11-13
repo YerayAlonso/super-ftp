@@ -31,7 +31,7 @@ Run `npm audit`, `npm audit --omit=dev` and a RustSec audit (`cargo audit`) befo
 
 ### RSA timing advisory
 
-As of 2026-11-04, the lockfile includes `rsa 0.10.0-rc.18` via `russh` and `ssh-key`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). RustSec reports no fixed version. The advisory describes potential private-key recovery via timing leakage and highlights padding; its applicability and practical exploitability in this SSH client have not been established.
+As of 2026-11-13, the lockfile includes `rsa 0.10.0-rc.18` via `russh` and `ssh-key`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). The current RustSec audit reports `rsa >=0.10.0` as patched, but both the locked `russh 0.65.0` and the available `0.65.1` pin RSA to exactly `0.10.0-rc.18`. Resolving this requires a compatible upstream change or a separately reviewed dependency migration. The advisory describes potential private-key recovery via timing leakage and highlights padding; its applicability and practical exploitability in this SSH client have not been established.
 
 For RSA key-file authentication, Super FTP loads the private key and `russh` delegates signing to `ssh-key` and `rsa`. In the locked versions, this signing path invokes an RSA private operation without blinding. That is not itself proof that the advisory's padding-oracle attack applies to SSH signatures, nor proof that this signing path is safe from timing leakage. SSH agent authentication instead delegates signing to the external agent, whose implementation and risks must be assessed separately. This distinction does not establish that other uses of the dependency are unaffected.
 
