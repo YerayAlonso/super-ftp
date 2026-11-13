@@ -38,3 +38,4 @@ The exact installer has been signed with the existing project updater key and ve
 - All ten public release assets were downloaded without authentication and compared byte-for-byte by SHA-256 with the local verified files. Both checksum manifests passed.
 - The project-key fixture test also downloaded the real public HTTPS installer through the application's download helper and passed signature, modified-byte and wrong-version checks.
 - The preview feed was updated only after these checks; no stable feed was created. See `docs/signed-update-design.md` for the current production record.
+- After activation, the production preview URL returned the exact verified manifest and the HTTPS manifest/download fixture test passed against it. The stable URL returned HTTP 404. Tag `v0.1.4` was fetched and confirmed to target `795c63ffd4b596ceb8597d89adeb52ffd48d47ee`.
