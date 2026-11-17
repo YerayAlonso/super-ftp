@@ -1,6 +1,6 @@
 # Windows stable-release readiness
 
-Updated 2026-11-17. These changes target **0.1.5 development**. The public 0.1.4 preview and its signed update feed remain unchanged. This record separates engineering evidence from a decision to declare a supported Windows release stable.
+Updated 2026-11-17. These changes are published in the **0.1.5 Windows preview**, with its signed preview update feed activated after artifact and upgrade validation. This record separates engineering evidence from a decision to declare a supported Windows release stable.
 
 ## Changes completed in the source
 
@@ -28,7 +28,8 @@ Existing safeguards and limits remain: unknown/changed host keys block authentic
 - [Desktop CI run 44038109516](https://github.com/YerayAlonso/super-ftp/actions/runs/44038109516) passed all four jobs: Linux, macOS, Windows and UI. The Linux job passed the actual system OpenSSH server test, and the Windows job passed the real credential-store and agent tests, full Rust license checks and Clippy.
 - [Security run 44039028136](https://github.com/YerayAlonso/super-ftp/actions/runs/44039028136) passed RustSec, production npm and full npm audits with the final audit workflow. Application sources were tested in commit `3042739`; the later audit-policy change did not change the application binary.
 - The Windows NSIS development candidate reports version 0.1.5. Its extracted executable matches the build apart from Tauri's expected three-byte NSIS bundle marker. The native smoke test passed against that extracted executable with zero renderer errors; the entire displayed license text matched the generated source hash.
-- Local artifacts are in the ignored directory `src-tauri/target/release/readiness-0.1.5/`: installer, extracted test executable, notices, verified MPL sources, source-state record and SHA-256 manifest. Installer SHA-256: `18c29039571d48233a9059873ddf27595cca6946e5e3ab750de68c311d7e7d87`. It has no project updater signature or Authenticode signature and has not been published.
+- The original local readiness snapshot remains in `src-tauri/target/release/readiness-0.1.5/`. Its exact installer bytes were subsequently copied to `candidate-0.1.5`, signed with the project updater key and [published as v0.1.5](https://github.com/YerayAlonso/super-ftp/releases/tag/v0.1.5). Installer SHA-256: `18c29039571d48233a9059873ddf27595cca6946e5e3ab750de68c311d7e7d87`. There is no Windows Authenticode signature.
+- [Isolated upgrade run 44073399422](https://github.com/YerayAlonso/super-ftp/actions/runs/44073399422) passed the exact signed 0.1.4-to-0.1.5 upgrade, installed-version check, executable comparison and uninstall. Every public asset was then downloaded without authentication and matched its verified checksum; the application's HTTPS download helper also verified the public installer and signature.
 
 The public release must not be relabeled stable or its update feed switched just because these source changes exist.
 
@@ -42,6 +43,6 @@ The public release must not be relabeled stable or its update feed switched just
 | Rights and licensing assessment | Technical collection, source checks and packaged notices can be verified automatically. Independent asset provenance, provider terms and a legal compliance determination cannot be established by these tests. See THIRD_PARTY_REVIEW.md. |
 | Non-Windows dependency warnings | RustSec reports five warnings, including Linux GTK unsoundness and unmaintained packages. All five affected package names are absent from the resolved Windows graph. They remain visible and need assessment before distributing other platforms. |
 | Windows dependency maintenance | The release-day recheck adds the chrono maintenance warning through russh-sftp 3.0.1. Chrono is unconditional there, and no newer russh-sftp registry release is available. Track an upstream migration or review a library change; retain the warning until resolved. |
-| Next public release | Sign and publish the verified development candidate, with release-specific update validation; 0.1.4 installers remain affected by the old RSA dependency. Stable remains a separate release decision and channel. |
+| Stable release decision | The verified 0.1.5 preview is published. Stable remains a separate decision and channel after assessing the remaining work; 0.1.4 and earlier installers still contain the old RSA dependency. |
 
 macOS/Linux installers, FTP/FTPS, queue persistence, synchronization and resumable transfers are not prerequisites for a stable **Windows SFTP** release with the existing documented scope.

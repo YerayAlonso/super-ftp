@@ -1,9 +1,9 @@
 {
-  "version": "0.1.4",
+  "version": "0.1.5",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/YerayAlonso/super-ftp/releases/download/v0.1.4/Super.FTP_0.1.4_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUSUlkYlVsdUttM0xGc2R0b0w3NDhQcSsrNXNvVllaTVRWa2Z0VmFjdGg4bXJvdi93VG43QXVuN0JPZjgvczJXa1k5WkRwbWd6T2FCQVIzeHdLZ2kzT2J0NFF1Wm5FaEFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTU3MjA3CWZpbGU6U3VwZXIuRlRQXzAuMS40X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEuNAp0QW5kcityWStsNHFJOU5NOUpGaU1mRFpsUjZ6enRoQjVMcmkrM3NDVWdOaDMvWlRCclhRMDh0d2hHWlhxcFllbmRmd2ovaFV1YStZWmltdWhkT3FCdz09Cg=="
+      "url": "https://github.com/YerayAlonso/super-ftp/releases/download/v0.1.5/Super.FTP_0.1.5_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUSUlkYlVsdUttM0VLcUdGZWlYNWw3QVZCamM2L2IyM2xsN01PMnY0RVpyUExMSVpYRlUrejdQUlpwUi94UVo0cmYyYXAvWngyYlV5Qjk3ajlwQUwzWjduVDNPV2tFandvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0OTE0NDQ2CWZpbGU6U3VwZXIuRlRQXzAuMS41X3g2NC1zZXR1cC5leGUJdmVyc2lvbjowLjEuNQorL1NNT0VsNUNEb21ldVV1Yjg5Vm10bGlHbmNHSWtzbEVaWXdrWnF5UCtxYjN1T2E4ZEZrVng1YnNCaUVHSE5ERmJPWVVoU1h4KzVJWmlLOHIzb21EQT09Cg=="
     }
   }
 }

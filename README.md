@@ -114,7 +114,7 @@ Secrets use **Windows Credential Manager**, **macOS Keychain** or Linux **Secret
 
 See [SECURITY.md](SECURITY.md) for the security model and limitations.
 
-**RSA keys:** published versions through 0.1.4 include a dependency with a timing advisory. The 0.1.5 development sources use the upstream correction while retaining RSA support; this fix is not yet in a public installer. Prefer Ed25519 where supported until updating to a release containing the fix. See [SECURITY.md](SECURITY.md#rsa-timing-advisory).
+**RSA keys:** published versions through 0.1.4 include a dependency with a timing advisory. Update to [0.1.5](https://github.com/YerayAlonso/super-ftp/releases/tag/v0.1.5) to receive the upstream correction while retaining RSA support. See [SECURITY.md](SECURITY.md#rsa-timing-advisory).
 
 ## Preview limitations
 

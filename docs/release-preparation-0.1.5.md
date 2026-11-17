@@ -24,4 +24,4 @@ This updater signature is separate from Windows Authenticode. Stable-release dec
 
 ## Current status
 
-The 0.1.5 publication is in preparation. The production preview feed still points to 0.1.4 until signing and upgrade validation finish.
+The verified [0.1.5 Windows preview](https://github.com/YerayAlonso/super-ftp/releases/tag/v0.1.5) is published. The project-key fixture test passed signature verification, modified-byte rejection and wrong-version rejection. [Isolated upgrade run 44073399422](https://github.com/YerayAlonso/super-ftp/actions/runs/44073399422) passed the exact upgrade from public 0.1.4, installed-version check, executable comparison and uninstall. All ten public assets were downloaded without authentication and matched the verified local files and both checksum manifests. The application download helper also verified the actual public HTTPS installer and signature. The preview feed is activated only after those checks; stable remains disabled.

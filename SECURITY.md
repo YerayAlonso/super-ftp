@@ -31,11 +31,11 @@ Run `npm audit`, `npm audit --omit=dev` and a RustSec audit (`cargo audit`) befo
 
 ### RSA timing advisory
 
-**Fixed in the 0.1.5 development sources; not yet released.**
+**Fixed in the published 0.1.5 Windows preview.**
 
-Published versions through **0.1.4** include `rsa 0.10.0-rc.18`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). Those installers remain affected; changing this repository does not update an installed application. Prefer Ed25519 where supported until using a release containing the fix. The advisory's practical exploitability in this client's SSH signing path has not been established.
+Published versions through **0.1.4** include `rsa 0.10.0-rc.18`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). Those installers remain affected; update to [0.1.5](https://github.com/YerayAlonso/super-ftp/releases/tag/v0.1.5) to receive the correction. Prefer Ed25519 where supported until updating. The advisory's practical exploitability in this client's SSH signing path has not been established.
 
-The 0.1.5 development lockfile uses the official crates.io release **russh 0.65.2**, patched **rsa 0.10.0** and **ssh-key 0.7.0-rc.12**, retaining RSA compatibility. This release includes the merged [upstream RSA correction #821](https://github.com/warp-tech/russh/pull/821). The earlier russh releases 0.65.0 and 0.65.1 still require the affected RSA release candidate. All production dependencies use locked registry sources; no temporary Git dependency or private fork is required.
+The 0.1.5 lockfile uses the official crates.io release **russh 0.65.2**, patched **rsa 0.10.0** and **ssh-key 0.7.0-rc.12**, retaining RSA compatibility. This release includes the merged [upstream RSA correction #821](https://github.com/warp-tech/russh/pull/821). The earlier russh releases 0.65.0 and 0.65.1 still require the affected RSA release candidate. All production dependencies use locked registry sources; no temporary Git dependency or private fork is required.
 
 The pre-publication RustSec recheck on 2026-11-17 exits successfully with no vulnerability findings and six warnings. Five concern proc-macro-error, zbus_names, zvariant, zvariant_derive and glib (including an unsoundness warning); these packages do not occur in the resolved Windows graph. The additional [chrono maintenance advisory RUSTSEC-2026-0543](https://github.com/RustSec/advisory-db/blob/main/crates/chrono/RUSTSEC-2026-0543.md) does affect the Windows graph through russh-sftp 3.0.1. Chrono is an unconditional dependency of that library, all chrono versions are marked unmaintained, and no newer russh-sftp registry release is available. This warning requires upstream migration or a separately reviewed library change; it is not ignored. Successful audit exit status is not a claim that every dependency or platform has received a clean security review.
 
