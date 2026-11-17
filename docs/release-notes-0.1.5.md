@@ -6,7 +6,7 @@
 - Expanded recovery tests for failed writes, failed overwrite publication, failed restoration and retained recovery backups. Existing transfer and recovery limitations remain documented in the README.
 - Verified interoperability with a real OpenSSH server, including RSA authentication, explicit overwrite and byte-for-byte upload/download. Added native Windows Credential Manager and OpenSSH agent integration checks.
 - Expanded third-party notices with 49 crate-specific full-text supplements. Automated verification checks 649 license/NOTICE files, all six bundled frontend packages and the complete notice text displayed by the packaged application.
-- Added dependency-change security audit checks. Full and production npm audits report no advisories; RustSec reports no vulnerability findings. Its five remaining warnings concern packages outside the Windows dependency graph.
+- Added dependency-change security audit checks. Full and production npm audits report no advisories; RustSec reports no vulnerability findings. Its warnings include the unmaintained chrono dependency used by russh-sftp on Windows, plus five warnings for packages outside the Windows graph. The chrono warning remains visible; there is no corrected russh-sftp registry release available at publication.
 
 ## Availability and updates
 

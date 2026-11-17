@@ -8,6 +8,7 @@ Prepared on 2026-11-17 from the verified development candidate. Application buil
 - Installer SHA-256: `18c29039571d48233a9059873ddf27595cca6946e5e3ab750de68c311d7e7d87`.
 - [Desktop CI 44038109516](https://github.com/YerayAlonso/super-ftp/actions/runs/44038109516): all Windows, macOS, Linux and UI jobs passed, including real OpenSSH interoperability and Windows credential-store/agent integration.
 - [Security CI 44039028136](https://github.com/YerayAlonso/super-ftp/actions/runs/44039028136): RustSec, production npm and full npm audits passed. Five RustSec warnings concern packages absent from the Windows dependency graph.
+- The pre-publication audit recheck still reports no vulnerabilities; its newer advisory database adds a sixth warning for unmaintained chrono, used on Windows through russh-sftp 3.0.1. There is no newer russh-sftp registry release available, so this is recorded in the release notes and SECURITY.md rather than suppressed. Full and production npm audits remain clear.
 - The executable extracted from the candidate reports 0.1.5 and passed the native smoke test with zero renderer errors. Its complete displayed notice text matched the generated source hash. Its only differences from the build executable are Tauri's NSIS bundle-type marker bytes.
 - License verification checked 649 files across 374 third-party Rust packages and all six bundled frontend packages. All five MPL archives matched Cargo.lock and the local Cargo registry files.
 
