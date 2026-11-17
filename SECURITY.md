@@ -27,7 +27,7 @@ Super FTP is a preview. It has not undergone an independent security audit and c
 
 ## Dependencies and reporting
 
-Run `npm audit`, `npm audit --omit=dev` and a RustSec audit (`cargo audit`) before release. At the time this preview was prepared, the full npm audit reported a low-severity `deepmerge` advisory through the development-only Svelte/Vite plugin (GHSA-gcqx-w48m-w2h4), with no upstream fix available; the production-only npm audit reported no advisories. Recheck current results before distribution.
+Run `npm audit`, `npm audit --omit=dev` and a RustSec audit (`cargo audit`) before release. As of 2026-11-17, both npm audits report no advisories. The previously reported development-only [deepmerge advisory GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) was withdrawn upstream on 2026-11-16; no package change or advisory suppression was used to clear it. Recheck current results before distribution.
 
 ### RSA timing advisory
 
@@ -37,10 +37,10 @@ Published versions through **0.1.4** include `rsa 0.10.0-rc.18`, affected by [RU
 
 The 0.1.5 development lockfile uses the official crates.io release **russh 0.65.2**, patched **rsa 0.10.0** and **ssh-key 0.7.0-rc.12**, retaining RSA compatibility. This release includes the merged [upstream RSA correction #821](https://github.com/warp-tech/russh/pull/821). The earlier russh releases 0.65.0 and 0.65.1 still require the affected RSA release candidate. All production dependencies use locked registry sources; no temporary Git dependency or private fork is required.
 
-The updated RustSec audit exits successfully with no vulnerability findings. It still reports five dependency warnings, including an unsoundness warning in the Linux GTK dependency graph; this does not mean every dependency or platform has received a clean security review. The development-only npm deepmerge finding also remains without an upstream fixed release.
+The updated RustSec audit exits successfully with no vulnerability findings. It still reports five dependency warnings, including an unsoundness warning in the Linux GTK dependency graph; this does not mean every dependency or platform has received a clean security review.
 
 Regression tests authenticate with an encrypted RSA client key to an RSA host, reject an incorrect passphrase before public-key authentication, and retain Ed25519 authentication. Additional fault tests check interrupted writes, publication rollback, failed restoration and retained recovery backups. Native Windows opt-in tests check the credential store and OpenSSH agent using only uniquely generated test entries and keys.
 
-SSH agent authentication delegates signing to the external agent; its implementation remains outside this application's control. Dependency changes now trigger RustSec and production npm audits on pushes and pull requests. Scheduled and manually requested audits additionally report development dependency findings, without ignoring the RSA advisory.
+SSH agent authentication delegates signing to the external agent; its implementation remains outside this application's control. Dependency changes now trigger RustSec, production npm and full npm audits on pushes and pull requests, as well as scheduled/manual runs. No advisory is ignored to pass these checks.
 
 To report a vulnerability privately, use [GitHub's private vulnerability reporting form](https://github.com/YerayAlonso/super-ftp/security/advisories/new). Do not post vulnerability details, passwords, private keys, memory dumps or private server configuration in a public issue. The maintainer will review reports through GitHub; availability of the form requires a GitHub account.

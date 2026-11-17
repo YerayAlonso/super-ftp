@@ -42,5 +42,5 @@ jobs:
       - name: Audit production dependencies
         run: npm audit --omit=dev
       - name: Audit all dependencies
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always()
         run: npm audit
