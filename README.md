@@ -127,7 +127,7 @@ See [SECURITY.md](SECURITY.md) for the security model and limitations.
 - Host certificate/CA trust, OpenSSH `known_hosts` import and replacing known host keys from the UI are not implemented. Legitimate key rotation requires independent verification and manual maintenance while the app is closed.
 - Listings are virtualized in the interface, but the current SFTP library materializes the complete remote directory before displaying it.
 - Native drag and drop still requires real-device validation. SSH agent and credential-store behavior on macOS and Linux remain unvalidated. Mocked UI tests do not replace this work.
-- Native Windows credential-store and OpenSSH-agent integration tests are available and have passed on the development machine. These tests do not validate drag and drop or establish support on untested devices. Agent authentication tries at most six identities.
+- Native Windows credential-store and OpenSSH-agent integration tests have passed on the development machine and in CI. These tests do not validate drag and drop or establish support on untested devices. Agent authentication tries at most six identities.
 
 ## Structure
 

@@ -20,11 +20,14 @@ Existing safeguards and limits remain: unknown/changed host keys block authentic
 
 ## Validation record
 
-- Local Windows checks passed: Svelte/TypeScript, 17 unit tests, the manifest test, production web build and 26 UI tests in Edge.
+- Local checks on Windows 11 Pro build 10.0.26300 passed: Svelte/TypeScript, 17 unit tests, the manifest test, production web build and 26 UI tests in Edge.
 - The Rust library suite passed 33 tests. Credential Manager and real Windows OpenSSH agent tests were then run explicitly and passed; existing agent identities were preserved. Formatting and Clippy with warnings denied passed.
 - RustSec exited successfully with no vulnerability findings and five warnings. Both production and full npm audits found no advisories on 2026-11-17. GitHub withdrew the previous deepmerge advisory on 2026-11-16; package versions were not changed to hide it.
 - Rust license verification checked 649 files across 374 third-party packages; frontend verification covered all six bundled packages. All five MPL archives matched Cargo.lock and the local Cargo registry source files.
-- The new real OpenSSH server CI check and the final native installer/notice-hash check are pending execution. These must pass before counting them as release evidence.
+- [Desktop CI run 44038109516](https://github.com/YerayAlonso/super-ftp/actions/runs/44038109516) passed all four jobs: Linux, macOS, Windows and UI. The Linux job passed the actual system OpenSSH server test, and the Windows job passed the real credential-store and agent tests, full Rust license checks and Clippy.
+- [Security run 44039028136](https://github.com/YerayAlonso/super-ftp/actions/runs/44039028136) passed RustSec, production npm and full npm audits with the final audit workflow. Application sources were tested in commit `3042739`; the later audit-policy change did not change the application binary.
+- The Windows NSIS development candidate reports version 0.1.5. Its extracted executable matches the build apart from Tauri's expected three-byte NSIS bundle marker. The native smoke test passed against that extracted executable with zero renderer errors; the entire displayed license text matched the generated source hash.
+- Local artifacts are in the ignored directory `src-tauri/target/release/readiness-0.1.5/`: installer, extracted test executable, notices, verified MPL sources, source-state record and SHA-256 manifest. Installer SHA-256: `18c29039571d48233a9059873ddf27595cca6946e5e3ab750de68c311d7e7d87`. It has no project updater signature or Authenticode signature and has not been published.
 
 The public release must not be relabeled stable or its update feed switched just because these source changes exist.
 
@@ -36,7 +39,7 @@ The public release must not be relabeled stable or its update feed switched just
 | Real-device and sustained use | Native drag and drop, varied Windows setups and external server implementations still need a recorded usage matrix and a period of real use without serious regressions. The automated OpenSSH fixture covers one implementation, not every server. |
 | Independent security review | Arrange an external review if that is part of the project's stable-release acceptance criteria. The internal source review does not claim independence. |
 | Rights and licensing assessment | Technical collection, source checks and packaged notices can be verified automatically. Independent asset provenance, provider terms and a legal compliance determination cannot be established by these tests. See THIRD_PARTY_REVIEW.md. |
-| Remaining dependency warnings | RustSec still reports five warnings, including Linux GTK unsoundness and unmaintained packages. They remain visible and need assessment for each supported platform. |
-| Next public release | Build/sign/verify and publish a release containing these fixes; 0.1.4 installers remain affected by the old RSA dependency. Stable remains a separate release decision and channel. |
+| Non-Windows dependency warnings | RustSec reports five warnings, including Linux GTK unsoundness and unmaintained packages. All five affected package names are absent from the resolved Windows graph. They remain visible and need assessment before distributing other platforms. |
+| Next public release | Sign and publish the verified development candidate, with release-specific update validation; 0.1.4 installers remain affected by the old RSA dependency. Stable remains a separate release decision and channel. |
 
 macOS/Linux installers, FTP/FTPS, queue persistence, synchronization and resumable transfers are not prerequisites for a stable **Windows SFTP** release with the existing documented scope.
