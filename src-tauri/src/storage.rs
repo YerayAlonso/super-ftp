@@ -163,6 +163,34 @@ pub fn delete_secret(id: &str) -> AppResult<()> {
 mod tests {
     use super::*;
 
+    #[cfg(windows)]
+    #[test]
+    #[ignore = "writes and deletes one uniquely named test credential in Windows Credential Manager"]
+    fn windows_credential_store_round_trip() {
+        let id = format!("native-smoke:{}", uuid::Uuid::new_v4());
+        struct Cleanup<'a>(&'a str);
+        impl Drop for Cleanup<'_> {
+            fn drop(&mut self) {
+                let _ = delete_secret(self.0);
+            }
+        }
+        let _cleanup = Cleanup(&id);
+        assert!(read_secret(&id).unwrap().is_none());
+        secret_entry(&id)
+            .unwrap()
+            .set_password("temporary-super-ftp-test-secret")
+            .unwrap();
+        assert_eq!(
+            read_secret(&id)
+                .unwrap()
+                .as_ref()
+                .map(|secret| secret.as_str()),
+            Some("temporary-super-ftp-test-secret")
+        );
+        delete_secret(&id).unwrap();
+        assert!(read_secret(&id).unwrap().is_none());
+    }
+
     fn connection() -> Connection {
         Connection {
             id: "test".into(),

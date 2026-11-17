@@ -114,7 +114,7 @@ Secrets use **Windows Credential Manager**, **macOS Keychain** or Linux **Secret
 
 See [SECURITY.md](SECURITY.md) for the security model and limitations.
 
-**RSA keys:** a dependency used for RSA key-file authentication has an unresolved timing advisory. Its applicability to this application's SSH signing path is not established. Prefer Ed25519 for new connections where supported; see [SECURITY.md](SECURITY.md#rsa-timing-advisory) for details.
+**RSA keys:** published versions through 0.1.4 include a dependency with a timing advisory. The 0.1.5 development sources use the upstream correction while retaining RSA support; this fix is not yet in a public installer. Prefer Ed25519 where supported until updating to a release containing the fix. See [SECURITY.md](SECURITY.md#rsa-timing-advisory).
 
 ## Preview limitations
 
@@ -126,7 +126,8 @@ See [SECURITY.md](SECURITY.md) for the security model and limitations.
 - Closing a session cancels its transfers. A process crash or lost connection can leave a remote temporary file; cleanup is best effort. The app does not automatically delete files it did not create.
 - Host certificate/CA trust, OpenSSH `known_hosts` import and replacing known host keys from the UI are not implemented. Legitimate key rotation requires independent verification and manual maintenance while the app is closed.
 - Listings are virtualized in the interface, but the current SFTP library materializes the complete remote directory before displaying it.
-- Native drag and drop, the SSH agent and system credential stores still require real-device validation on all three platforms. Mocked UI tests do not replace this work.
+- Native drag and drop still requires real-device validation. SSH agent and credential-store behavior on macOS and Linux remain unvalidated. Mocked UI tests do not replace this work.
+- Native Windows credential-store and OpenSSH-agent integration tests are available and have passed on the development machine. These tests do not validate drag and drop or establish support on untested devices. Agent authentication tries at most six identities.
 
 ## Structure
 

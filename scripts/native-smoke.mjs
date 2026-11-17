@@ -1,7 +1,8 @@
 // Opt-in Windows smoke test of the actual release executable and Tauri IPC.
 // Debugging is enabled only for this child process, never in shipped config.
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
@@ -23,7 +24,9 @@ const tempRoot = process.env.LOCALAPPDATA
 await mkdir(tempRoot, { recursive: true });
 const temporary = await mkdtemp(join(tempRoot, 'superftp-smoke-'));
 await writeFile(join(temporary, 'smoke-test.txt'), 'Temporary test file');
-const executable = resolve(process.env.SUPERFTP_SMOKE_EXECUTABLE ?? 'src-tauri/target/release/super-ftp.exe');
+const executable = resolve(
+  process.env.SUPERFTP_SMOKE_EXECUTABLE ?? 'src-tauri/target/release/super-ftp.exe',
+);
 const child = spawn(executable, [], {
   env: {
     ...process.env,
@@ -79,14 +82,32 @@ try {
       .getByRole('region', { name: 'Fitxers locals', exact: true })
       .getByText('smoke-test.txt', { exact: true }),
   ).toBeVisible();
-  await page.getByRole('region', { name: 'Fitxers locals', exact: true }).getByText('smoke-test.txt', { exact: true }).click({ button: 'right' });
-  await expect(page.getByRole('menu', { name: 'Menú contextual' }).getByRole('menuitem', { name: 'Propietats' })).toBeVisible();
+  await page
+    .getByRole('region', { name: 'Fitxers locals', exact: true })
+    .getByText('smoke-test.txt', { exact: true })
+    .click({ button: 'right' });
+  await expect(
+    page
+      .getByRole('menu', { name: 'Menú contextual' })
+      .getByRole('menuitem', { name: 'Propietats' }),
+  ).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Ajuda', exact: true }).click();
   let help = page.getByRole('dialog');
   await help.getByRole('button', { name: 'Llicències de tercers' }).click();
-  await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('SIL OPEN FONT LICENSE');
-  await expect(help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })).toContainText('npm: @tauri-apps/api 2.12.4 (Apache-2.0 OR MIT) — LICENSE-MIT');
+  await expect(
+    help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' }),
+  ).toContainText('SIL OPEN FONT LICENSE');
+  await expect(
+    help.getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' }),
+  ).toContainText('npm: @tauri-apps/api 2.12.4 (Apache-2.0 OR MIT) — LICENSE-MIT');
+  const renderedNotices = await help
+    .getByRole('region', { name: 'Avisos de llicències de tercers (inventari de Windows)' })
+    .textContent();
+  const expectedNotices = await readFile(resolve('src/lib/third-party-notices.txt'), 'utf8');
+  const noticeHash = (text) =>
+    createHash('sha256').update(text.replace(/\r\n/g, '\n')).digest('hex');
+  expect(noticeHash(renderedNotices ?? '')).toBe(noticeHash(expectedNotices));
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Preferències', exact: true }).click();
   help = page.getByRole('dialog');
@@ -94,13 +115,18 @@ try {
   await updates.getByRole('button', { name: 'Comprova si hi ha actualitzacions' }).click();
   await expect(updates.locator('[role="status"], [role="alert"]')).toBeVisible({ timeout: 20000 });
   await page.keyboard.press('Escape');
-  const localOperations = await page.evaluate(async parent => {
-    await window.__TAURI_INTERNALS__.invoke('create_local_directory', { parent, name: 'test-folder' });
+  const localOperations = await page.evaluate(async (parent) => {
+    await window.__TAURI_INTERNALS__.invoke('create_local_directory', {
+      parent,
+      name: 'test-folder',
+    });
     const listing = await window.__TAURI_INTERNALS__.invoke('list_local', { path: parent });
-    const entry = listing.entries.find(item => item.name === 'test-folder');
+    const entry = listing.entries.find((item) => item.name === 'test-folder');
     if (!entry) throw new Error('Missing created folder');
     await window.__TAURI_INTERNALS__.invoke('delete_local', { paths: [entry.path] });
-    return !(await window.__TAURI_INTERNALS__.invoke('list_local', { path: parent })).entries.some(item => item.name === 'test-folder');
+    return !(await window.__TAURI_INTERNALS__.invoke('list_local', { path: parent })).entries.some(
+      (item) => item.name === 'test-folder',
+    );
   }, temporary);
   expect(localOperations).toBe(true);
   const validation = await page.evaluate(async () => {

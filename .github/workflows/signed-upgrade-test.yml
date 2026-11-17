@@ -8,13 +8,17 @@ on:
         type: boolean
         default: false
       candidate_tag:
-        description: Release tag containing the exact project-signed candidate (drafts supported)
+        description: Release tag containing the exact project-signed candidate (defaults to the checked-out version)
         type: string
-        default: v0.1.4
+        default: ''
       candidate_sha256:
         description: SHA-256 of the locally verified project-signed installer
         type: string
-        default: 4f524f94ba5873039e4c933120244a60cfd7c9864b3916ab80119322e24da626
+        default: ''
+      previous_version:
+        description: Previous public Windows preview to upgrade from
+        type: string
+        default: '0.1.4'
       candidate_manifest_url:
         description: Optional HTTPS manifest to exercise after public assets are available
         type: string
@@ -34,6 +38,7 @@ jobs:
       SUPERFTP_CANDIDATE_TAG: ${{ inputs.candidate_tag }}
       SUPERFTP_CANDIDATE_SHA256: ${{ inputs.candidate_sha256 }}
       SUPERFTP_CANDIDATE_MANIFEST_URL: ${{ inputs.candidate_manifest_url }}
+      SUPERFTP_PREVIOUS_VERSION: ${{ inputs.previous_version || '0.1.4' }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
@@ -47,8 +52,8 @@ jobs:
         run: |
           $version = (Get-Content -Raw 'src-tauri/tauri.conf.json' | ConvertFrom-Json).version
           "SUPERFTP_TEST_VERSION=$version" >> $env:GITHUB_ENV
-          $previous = '0.1.3'
-          "SUPERFTP_PREVIOUS_VERSION=$previous" >> $env:GITHUB_ENV
+          if (-not $env:SUPERFTP_CANDIDATE_TAG) { "SUPERFTP_CANDIDATE_TAG=v$version" >> $env:GITHUB_ENV }
+          if ($env:SUPERFTP_PREVIOUS_VERSION -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') { throw 'Invalid previous version' }
       - name: Build test installer
         if: ${{ inputs.use_project_candidate != true }}
         run: npm run desktop:build -- --bundles nsis

@@ -1,4 +1,4 @@
-# Super FTP 0.1.4 — Windows preview candidate
+# Super FTP 0.1.4 — Windows preview
 
 ## Changes since 0.1.3
 

@@ -34,6 +34,18 @@ On Linux and macOS, install Playwright Chromium first with `npx playwright insta
 
 Keep changes focused, add tests where practical, and describe what you tested and any platform limitations in the pull request. Include screenshots for visual changes only after checking them for sensitive information. Document changes to transfer, deletion, host-key or credential handling and avoid weakening existing safeguards.
 
+## Native and interoperability checks
+
+On Windows with the OpenSSH agent already running, the following opt-in tests use one uniquely named temporary credential and one generated agent key. They remove only their own entries and verify that pre-existing agent identities are unchanged. The agent test refuses to run when six or more identities are already loaded; it never clears a user's agent.
+
+```sh
+cargo test --manifest-path src-tauri/Cargo.toml --lib --locked storage::tests::windows_credential_store_round_trip -- --ignored --exact
+cargo test --manifest-path src-tauri/Cargo.toml --lib --locked integration_tests::windows_openssh_agent_authenticates_with_only_the_temporary_fixture_key -- --ignored --exact
+node scripts/verify-rust-notices.mjs
+```
+
+CI also runs `scripts/openssh-smoke.mjs` against a real OpenSSH server on an isolated Linux runner, using generated keys, a loopback-only port and temporary directories. The script deliberately refuses to run on developer machines. It checks RSA authentication, explicit overwrite and byte-for-byte upload/download with the application's backend.
+
 ## Translations
 
 English strings are the catalogue keys in `src/lib/i18n/`; each entry provides Catalan, Spanish, French, German, Italian, Portuguese and Dutch translations. Preserve placeholders such as `{name}` exactly. Tests check catalogue coverage and placeholder consistency. Avoid translating paths, filenames and raw library errors as though they were UI messages.

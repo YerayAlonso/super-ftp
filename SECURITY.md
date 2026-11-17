@@ -23,7 +23,7 @@ Super FTP is a preview. It has not undergone an independent security audit and c
 - These path checks are not a capability-based sandbox against another local process with the same user permissions. Do not transfer into directories controlled by an untrusted local user. A verified malicious server can still lie about its content and metadata.
 - The SFTP library materializes each remote directory in memory. There is no independently negotiated end-to-end file checksum; transport integrity is provided by SSH.
 - Agent forwarding, interactive multi-factor authentication, host certificates/CA trust and advanced OpenSSH configuration are not implemented.
-- The preview installers are unsigned and not notarized. Dependency selection and automated tests are not a substitute for a security review.
+- Windows installers do not have an Authenticode publisher signature. The separate Tauri updater signature is version-bound and required for in-app installation. Dependency selection and automated tests are not a substitute for a security review.
 
 ## Dependencies and reporting
 
@@ -31,10 +31,16 @@ Run `npm audit`, `npm audit --omit=dev` and a RustSec audit (`cargo audit`) befo
 
 ### RSA timing advisory
 
-As of 2026-11-13, the lockfile includes `rsa 0.10.0-rc.18` via `russh` and `ssh-key`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). The current RustSec audit reports `rsa >=0.10.0` as patched, but both the locked `russh 0.65.0` and the available `0.65.1` pin RSA to exactly `0.10.0-rc.18`. Resolving this requires a compatible upstream change or a separately reviewed dependency migration. The advisory describes potential private-key recovery via timing leakage and highlights padding; its applicability and practical exploitability in this SSH client have not been established.
+**Fixed in the 0.1.5 development sources; not yet released.**
 
-For RSA key-file authentication, Super FTP loads the private key and `russh` delegates signing to `ssh-key` and `rsa`. In the locked versions, this signing path invokes an RSA private operation without blinding. That is not itself proof that the advisory's padding-oracle attack applies to SSH signatures, nor proof that this signing path is safe from timing leakage. SSH agent authentication instead delegates signing to the external agent, whose implementation and risks must be assessed separately. This distinction does not establish that other uses of the dependency are unaffected.
+Published versions through **0.1.4** include `rsa 0.10.0-rc.18`, affected by [RUSTSEC-2023-0071 / CVE-2023-49092](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). Those installers remain affected; changing this repository does not update an installed application. Prefer Ed25519 where supported until using a release containing the fix. The advisory's practical exploitability in this client's SSH signing path has not been established.
 
-Where supported, prefer Ed25519 keys for new connections while this is investigated. Existing RSA authentication remains available for compatibility. Review the advisory and dependencies again before distribution; the scheduled and manually runnable dependency-security workflow reports findings separately from normal build CI, without ignoring this advisory.
+The 0.1.5 development lockfile uses the official crates.io release **russh 0.65.2**, patched **rsa 0.10.0** and **ssh-key 0.7.0-rc.12**, retaining RSA compatibility. This release includes the merged [upstream RSA correction #821](https://github.com/warp-tech/russh/pull/821). The earlier russh releases 0.65.0 and 0.65.1 still require the affected RSA release candidate. All production dependencies use locked registry sources; no temporary Git dependency or private fork is required.
+
+The updated RustSec audit exits successfully with no vulnerability findings. It still reports five dependency warnings, including an unsoundness warning in the Linux GTK dependency graph; this does not mean every dependency or platform has received a clean security review. The development-only npm deepmerge finding also remains without an upstream fixed release.
+
+Regression tests authenticate with an encrypted RSA client key to an RSA host, reject an incorrect passphrase before public-key authentication, and retain Ed25519 authentication. Additional fault tests check interrupted writes, publication rollback, failed restoration and retained recovery backups. Native Windows opt-in tests check the credential store and OpenSSH agent using only uniquely generated test entries and keys.
+
+SSH agent authentication delegates signing to the external agent; its implementation remains outside this application's control. Dependency changes now trigger RustSec and production npm audits on pushes and pull requests. Scheduled and manually requested audits additionally report development dependency findings, without ignoring the RSA advisory.
 
 To report a vulnerability privately, use [GitHub's private vulnerability reporting form](https://github.com/YerayAlonso/super-ftp/security/advisories/new). Do not post vulnerability details, passwords, private keys, memory dumps or private server configuration in a public issue. The maintainer will review reports through GitHub; availability of the form requires a GitHub account.
